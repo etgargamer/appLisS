@@ -1,182 +1,30 @@
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang='es'>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AppLisS — Liss Variedades 🛍️ (Google Sheets)</title>
-  <meta name="description" content="AppLisS: Panel moderno con Google Sheets (SheetDB).">
-  <link rel="icon" type="image/png" href="assets/img/logo-icon.png" />
-  <link rel="stylesheet" href="assets/css/style.css" />
+<meta charset='utf-8'/>
+<title>AppLisS — Liss Variedades 🛍️</title>
+<link rel='icon' href='assets/img/logo-icon.png'/>
+<link rel='stylesheet' href='assets/css/style.css'/>
 </head>
 <body>
-  <!-- Splash / Bienvenida -->
-  <div class="splash" id="splash">
-    <div class="card">
-      <img src="assets/img/logo-icon.png" alt="LV Logo">
-      <h1>Bienvenido a AppLisS</h1>
-      <div class="muted">Liss Variedades 🛍️ — cargando datos...</div>
-      <div class="loader"></div>
+<div class='layout'>
+  <aside class='sidebar'>
+    <div>
+      <img src='assets/img/logo-icon.png' alt='LV' style='width:40px;height:40px;border-radius:8px;display:block;margin:auto;'>
+      <div style='text-align:center;margin-top:8px;font-weight:700;'>Liss Variedades 🛍️</div>
+      <div class='version'>v3.8</div>
     </div>
+  </aside>
+</div>
+<div class='modal-overlay' id='modal'>
+  <div class='modal'>
+    <h2>Factura Vista Previa</h2>
+    <p>Contenido del modal con animación suave.</p>
+    <button class='btn' onclick="showToast('✅ Factura guardada correctamente')">Guardar</button>
   </div>
-
-  <!-- Modal de vista previa -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <div class="head">
-        <img src="assets/img/logo-icon.png" alt="LV">
-        <div>
-          <div style="font-weight:800">Liss Variedades 🛍️</div>
-          <div class="muted">Factura <span id="m_factura">—</span></div>
-        </div>
-        <div style="margin-left:auto">
-          <button class="btn warn" id="m_close">❌ Cerrar</button>
-        </div>
-      </div>
-      <div class="body">
-        <div class="row"><strong>Cliente:</strong> <span id="m_cliente"></span></div>
-        <div class="row"><strong>Teléfono:</strong> <span id="m_telefono"></span></div>
-        <div class="row"><strong>Artículo:</strong> <span id="m_articulo"></span></div>
-        <div class="row" style="gap:18px;flex-wrap:wrap">
-          <div><strong>Valor:</strong> <span id="m_valor"></span></div>
-          <div><strong>% Ganancia:</strong> <span id="m_porc"></span></div>
-          <div><strong>Libra:</strong> <span id="m_libra"></span></div>
-        </div>
-        <div class="row" style="gap:18px;flex-wrap:wrap">
-          <div><strong>Total:</strong> <span id="m_total"></span></div>
-          <div><strong>Pagado:</strong> <span id="m_pagado"></span></div>
-          <div><strong>Pendiente:</strong> <span id="m_pendiente"></span></div>
-        </div>
-        <div class="row" style="gap:18px;flex-wrap:wrap">
-          <div><strong>Estado:</strong> <span id="m_estado"></span></div>
-          <div><strong>Tracking:</strong> <span id="m_tracking"></span></div>
-        </div>
-        <textarea id="m_msg" readonly style="width:100%;min-height:160px;border-radius:12px;padding:10px"></textarea>
-      </div>
-      <div class="footer">
-        <button class="btn secondary" id="m_copy">📋 Copiar</button>
-        <button class="btn ok" id="m_whatsapp">📱 Enviar por WhatsApp</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast">Listo ✅</div>
-
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="brand">
-        <img src="assets/img/logo-icon.png" alt="LV">
-        <div class="title">AppLisS — Liss Variedades 🛍️</div>
-      </div>
-      <nav class="nav">
-        <button class="active" data-nav="dashboard">📊 Dashboard</button>
-        <button data-nav="clientes">👤 Clientes</button>
-        <button data-nav="pedidos">📦 Pedidos</button>
-        <button data-nav="pagos">💵 Pagos / Abonos</button>
-      </nav>
-      <div class="footer">Hecho con ❤️ por Liss Variedades 🛍️</div>
-    </aside>
-
-    <!-- Content -->
-    <main class="content">
-      <div class="header">
-        <h2>Panel</h2>
-        <div class="spacer"></div>
-        <div class="endpoint"><strong>Endpoint:</strong> <span id="endpointView"></span></div>
-        <button class="btn secondary" id="btnRecargar">Recargar</button>
-      </div>
-
-      <!-- Dashboard -->
-      <section class="tab tab-dashboard" style="display:block">
-        <div class="kpis">
-          <div class="kpi"><h3>Clientes</h3><div class="val" id="kpiClientes">0</div></div>
-          <div class="kpi"><h3>Pedidos</h3><div class="val" id="kpiPedidos">0</div></div>
-          <div class="kpi"><h3>Total vendido</h3><div class="val" id="kpiVendido">RD$ 0</div></div>
-          <div class="kpi"><h3>Total cobrado</h3><div class="val" id="kpiCobrado">RD$ 0</div></div>
-        </div>
-      </section>
-
-      <!-- Clientes -->
-      <section class="tab tab-clientes" style="display:none">
-        <div class="grid grid-2">
-          <div class="card">
-            <h3>➕ Registrar cliente</h3>
-            <div class="grid">
-              <input id="cNombre" placeholder="Nombre completo">
-              <input id="cTelefono" placeholder="Teléfono">
-              <input id="cEmail" placeholder="Email (opcional)">
-              <textarea id="cNotas" placeholder="Notas"></textarea>
-              <button class="btn" id="btnAddCliente">Guardar cliente</button>
-            </div>
-            <div class="sep"></div>
-            <div class="muted">Se creará una fila <span class="pill">tipo=cliente</span> en la hoja.</div>
-          </div>
-          <div class="card">
-            <h3>📋 Listado</h3>
-            <div id="listaClientes" class="list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Pedidos -->
-      <section class="tab tab-pedidos" style="display:none">
-        <div class="grid grid-2">
-          <div class="card">
-            <h3>➕ Registrar pedido</h3>
-            <div class="grid">
-              <select id="pCliente"></select>
-              <input id="pArticulo" placeholder="Artículo">
-              <div class="grid" style="grid-template-columns:repeat(3, 1fr)">
-                <input id="pValor" type="number" placeholder="Valor (RD$)">
-                <input id="pPorc" type="number" placeholder="% (ganancia)">
-                <input id="pLibra" type="number" placeholder="Libra (RD$)">
-              </div>
-              <div class="grid" style="grid-template-columns:1fr 1fr">
-                <input id="pTracking" placeholder="Tracking">
-                <select id="pEstado">
-                  <option value="pendiente">Pendiente</option>
-                  <option value="enviado">Enviado</option>
-                  <option value="entregado">Entregado</option>
-                  <option value="cancelado">Cancelado</option>
-                </select>
-              </div>
-              <button class="btn" id="btnAddPedido">Guardar pedido</button>
-            </div>
-            <div class="sep"></div>
-            <div class="muted">Se creará una fila <span class="pill">tipo=pedido</span> con <span class="pill">factura</span> automática.</div>
-          </div>
-          <div class="card">
-            <h3>📋 Listado</h3>
-            <div id="listaPedidos" class="list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Pagos -->
-      <section class="tab tab-pagos" style="display:none">
-        <div class="grid grid-2">
-          <div class="card">
-            <h3>➕ Registrar abono</h3>
-            <div class="grid">
-              <select id="payCliente"></select>
-              <select id="payPedido"></select>
-              <input id="payMonto" type="number" placeholder="Monto (RD$)">
-              <button class="btn ok" id="btnAddPago">Guardar abono</button>
-            </div>
-            <div class="sep"></div>
-            <div class="muted">Se creará una fila <span class="pill">tipo=pago</span> con <span class="pill">factura</span> automática.</div>
-          </div>
-          <div class="card">
-            <h3>📜 Historial reciente</h3>
-            <div id="listaPagos" class="list"></div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <script src="assets/js/app.js"></script>
+</div>
+<div class='toast' id='toast'></div>
+<script src='assets/js/app.js'></script>
 </body>
 </html>
