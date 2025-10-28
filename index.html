@@ -1,402 +1,352 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LisS Variedades — App de Cobranza v2</title>
-<style>
-:root{
-  --bg:#0b1220; --card:#111a2b; --muted:#9fb0c9; --ink:#e6f1ff;
-  --primary:#21d4fd; --accent:#b721ff; --success:#10b981; --warn:#f59e0b; --danger:#ef4444;
-  --ring: rgba(33,212,253,.35);
-}
-*{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#0b1220 0%,#08101e 100%);color:var(--ink);font:500 15px/1.5 'Inter',system-ui,Segoe UI,Roboto,Arial}
-header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#0f192e, #101a33);
-  border-bottom:1px solid #1f2b45;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:12px;font-weight:800}
-.brand i{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;
-  background:conic-gradient(from 180deg,var(--accent),var(--primary)); color:#031228; font-style:normal}
-.brand span{letter-spacing:.3px}
-.top-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;transition:.15s;box-shadow:0 6px 20px rgba(0,0,0,.25)}
-.btn:hover{transform:translateY(-1px)}
-.btn-ghost{background:#1a2540;color:#cfe3ff;border:1px solid #223153}
-.btn-main{background:linear-gradient(90deg,var(--primary),var(--accent));color:#0a0f1a}
-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px}
-.tab{background:#0f1a30;color:#cfe3ff;border:1px solid #233257;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer}
-.tab[aria-current="page"], .tab:hover{background:linear-gradient(90deg,var(--primary),var(--accent));color:#07111f}
-.container{max-width:1180px;margin:0 auto;padding:18px}
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-.card{background:linear-gradient(180deg,#0e1830,#0c172d);border:1px solid #1f2c4d;border-radius:18px;padding:18px}
-.card h2{margin:0 0 8px;font-size:18px;color:#a7ccff}
-.kpi b{display:block;font-size:22px}
-label{color:var(--muted);font-weight:700;display:block;margin-top:12px}
-input,select,textarea{width:100%;background:#0b152a;color:#e6f1ff;border:1px solid #213154;border-radius:12px;padding:11px 12px;margin-top:6px}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--ring)}
-.row{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:10px;border-bottom:1px solid #223255;text-align:left}
-th{color:#9fb0c9;background:#0b152a;position:sticky;top:72px}
-.badge{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}
-.b-warn{background:rgba(245,158,11,.25);color:#fbbf24}
-.b-info{background:rgba(33,212,253,.2);color:#7dd3fc}
-.b-ok{background:rgba(16,185,129,.25);color:#34d399}
-.tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.hidden{display:none}
-.note{color:#9fb0c9;font-size:13px}
-details summary{cursor:pointer;color:#cfe3ff}
-@media (max-width:720px){ .row{grid-template-columns:1fr} }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AppLisS - Control de Clientes y Pedidos</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { text-align: center; color: #1e293b; }
+    .container { max-width: 900px; margin: 0 auto; }
+    section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, select {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    button {
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #1e293b; }
+    .listado {
+      margin-top: 15px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+    }
+    .cliente-card, .pedido-card {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 5px 0;
+      background: #f1f5f9;
+      cursor: pointer;
+    }
+    .cliente-card:hover { background: #e2e8f0; }
+    .whatsapp-btn {
+      background: #25d366;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 5px;
+    }
+    .whatsapp-btn:hover { background: #1ebe5c; }
+    .pago-btn {
+      background: #2563eb;
+      color: white;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 4px;
+      display: inline-block;
+    }
+    .pago-btn:hover { background: #1e40af; }
+    .campo-pago {
+      margin-top: 5px;
+      display: none;
+    }
+    #detalleCliente { display: none; }
+    canvas {
+      max-width: 400px;
+      margin: 15px auto;
+      display: block;
+    }
+    .subtitulo {
+      font-weight: bold;
+      margin-top: 20px;
+      color: #1e293b;
+    }
+    #historialPagos {
+      margin-top: 20px;
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    #historialPagos h3 {
+      margin-top: 0;
+      color: #0f172a;
+    }
+    .pago-item {
+      font-size: 0.95em;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 5px 0;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <div class="brand"><i>💼</i><span>LisS Variedades — App de Cobranza</span></div>
-    <div class="top-actions">
-      <button class="btn btn-ghost" onclick="exportDB()">⬇️ Exportar</button>
-      <label class="btn btn-ghost" for="fileImport">⬆️ Importar</label>
-      <input id="fileImport" type="file" accept="application/json" class="hidden" onchange="importDB(event)">
-    </div>
-  </header>
-
-  <nav>
-    <button class="tab" id="t-dashboard" aria-current="page" onclick="switchView('dashboard')">Dashboard</button>
-    <button class="tab" id="t-clientes" onclick="switchView('clientes')">Clientes</button>
-    <button class="tab" id="t-nuevo" onclick="switchView('nuevo')">Nuevo Pedido</button>
-    <button class="tab" id="t-crear" onclick="switchView('crear')">Nuevo Cliente</button>
-  </nav>
-
+  <h1>📋 AppLisS - Liss Variedades</h1>
   <div class="container">
 
-    <section id="dashboard" class="grid">
-      <div class="card kpi"><h2>Capital</h2><b id="k-capital">RD$ 0.00</b><span class="note">Invertido</span></div>
-      <div class="card kpi"><h2>Ganancias</h2><b id="k-ganancias">RD$ 0.00</b><span class="note">% + Libra</span></div>
-      <div class="card kpi"><h2>Cobrado</h2><b id="k-cobrado">RD$ 0.00</b><span class="note">Pagos recibidos</span></div>
-      <div class="card kpi"><h2>Por cobrar</h2><b id="k-deuda">RD$ 0.00</b><span class="note">Deuda actual</span></div>
-
-      <div class="card">
-        <h2>Accesos rápidos</h2>
-        <div class="tools">
-          <button class="btn btn-main" onclick="switchView('nuevo')">➕ Crear Pedido</button>
-          <button class="btn btn-ghost" onclick="switchView('crear')">👤 Nuevo Cliente</button>
-          <button class="btn btn-ghost" onclick="loadDemo()">🧪 Cargar demo</button>
-        </div>
-        <p class="note">Consejo: exporta tus datos y súbelos a GitHub/Drive para tener copia en la nube.</p>
-      </div>
+    <!-- === PANEL PRINCIPAL === -->
+    <section id="panelPrincipal">
+      <h2>👤 Registrar Cliente</h2>
+      <input id="nombreCliente" placeholder="Nombre completo">
+      <input id="telefonoCliente" placeholder="Teléfono (solo números)">
+      <input id="direccionCliente" placeholder="Dirección">
+      <button id="btnAgregarCliente">Agregar Cliente</button>
+      <div class="listado" id="listaClientes"></div>
     </section>
 
-    <section id="clientes-view" class="card hidden">
-      <h2>Clientes</h2>
-      <div class="tools">
-        <input id="q" placeholder="Buscar por nombre o teléfono" oninput="renderClientes()">
-        <button class="btn btn-ghost" onclick="switchView('crear')">➕ Nuevo</button>
-      </div>
-      <table>
-        <thead><tr><th>Cliente</th><th>Teléfono</th><th>Pedidos</th><th>Acciones</th></tr></thead>
-        <tbody id="tbClientes"></tbody>
-      </table>
-      <div id="detalle" class="card hidden"></div>
+    <section id="panelPedidos">
+      <h2>📦 Registrar Pedido</h2>
+      <select id="clienteSelect"></select>
+      <input id="articulo" placeholder="Artículo">
+      <input id="valorArticulo" type="number" placeholder="Valor del artículo">
+      <input id="porcentaje" type="number" placeholder="Porcentaje (%)">
+      <input id="libra" type="number" placeholder="Costo por libra">
+      <input id="pagado" type="number" placeholder="Monto pagado">
+      <button id="btnAgregarPedido">Guardar Pedido</button>
+      <div class="listado" id="listaPedidos"></div>
     </section>
 
-    <section id="nuevo-view" class="card hidden">
-      <h2>Nuevo Pedido</h2>
-      <div class="row">
-        <div>
-          <label>Cliente</label>
-          <select id="selCliente"></select>
-        </div>
-        <div>
-          <label>Estado</label>
-          <select id="pEstado">
-            <option>En Tránsito</option>
-            <option>Disponible</option>
-            <option>Entregado</option>
-          </select>
-        </div>
-      </div>
-      <label>Artículo</label>
-      <input id="pArticulo" placeholder="Ej.: Bolso de mano">
-      <div class="row">
-        <div><label>Valor (RD$)</label><input type="number" id="pValor" placeholder="600"></div>
-        <div><label>Porcentaje (%)</label><input type="number" id="pPorc" placeholder="2"></div>
-      </div>
-      <div class="row">
-        <div><label>Libra (RD$)</label><input type="number" id="pLibra" placeholder="190"></div>
-        <div><label>Pago inicial (RD$)</label><input type="number" id="pAnticipo" placeholder="400"></div>
-      </div>
-      <label>Tracking</label>
-      <input id="pTracking" placeholder="XXXXXXXX">
-      <div class="tools">
-        <button class="btn btn-main" onclick="guardarPedido()">💾 Guardar Pedido</button>
-        <button class="btn btn-ghost" onclick="limpiarPedido()">↺ Limpiar</button>
-      </div>
-    </section>
+    <!-- === DETALLE DEL CLIENTE === -->
+    <section id="detalleCliente">
+      <h2 id="tituloDetalle">📄 Detalle del Cliente</h2>
+      <div id="infoCliente"></div>
+      <div id="pedidosCliente"></div>
+      <div id="resumenCliente" style="margin-top:10px;font-weight:600;"></div>
+      <canvas id="graficaCliente"></canvas>
 
-    <section id="crear-view" class="card hidden">
-      <h2>Cliente</h2>
-      <input type="hidden" id="cId">
-      <label>Nombre</label>
-      <input id="cNombre" placeholder="Ej.: María Pérez">
-      <div class="row">
-        <div><label>Teléfono</label><input id="cTelefono" placeholder="8095551234"></div>
-        <div><label>Correo</label><input id="cEmail" type="email" placeholder="maria@gmail.com"></div>
+      <!-- === FORMULARIO NUEVO PEDIDO === -->
+      <div class="subtitulo">➕ Agregar nuevo pedido</div>
+      <input id="articuloCliente" placeholder="Artículo">
+      <input id="valorCliente" type="number" placeholder="Valor del artículo">
+      <input id="porcentajeCliente" type="number" placeholder="Porcentaje (%)">
+      <input id="libraCliente" type="number" placeholder="Costo por libra">
+      <input id="pagadoCliente" type="number" placeholder="Monto pagado">
+      <button id="btnAgregarPedidoCliente">Guardar Pedido</button>
+
+      <!-- === HISTORIAL DE PAGOS === -->
+      <div id="historialPagos">
+        <h3>📜 Historial de Pagos</h3>
+        <div id="listaPagos"></div>
       </div>
-      <label>Notas</label>
-      <textarea id="cNotas" placeholder="Observaciones"></textarea>
-      <div class="tools">
-        <button class="btn btn-main" onclick="guardarCliente()">💾 Guardar</button>
-        <button class="btn btn-ghost" onclick="eliminarCliente()">🗑️ Eliminar</button>
-        <button class="btn btn-ghost" onclick="switchView('clientes')">↩︎ Volver</button>
-      </div>
+
+      <button id="btnVolver">⬅ Volver</button>
     </section>
 
   </div>
 
-<script>
-// ====== Globals & Utils ======
-var SKEY = 'LisS_Cobranza_v2';
-function uid(p){ return (p||'id') + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
-function fmtRD(n){ n=Number(n||0); return 'RD$ ' + n.toFixed(2); }
-function todayISO(){ return new Date().toISOString(); }
-var db = JSON.parse(localStorage.getItem(SKEY) || '{"clientes":[]}');
-function save(){ localStorage.setItem(SKEY, JSON.stringify(db)); }
+  <!-- === Chart.js CDN === -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-function byId(id){ return document.getElementById(id); }
-function show(id){ document.getElementById(id).classList.remove('hidden'); }
-function hide(id){ document.getElementById(id).classList.add('hidden'); }
+  <!-- === FIREBASE SDK === -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, getDoc, doc, query, where, getDocs, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-// ====== Views ======
-function switchView(view){
-  // tabs
-  ['dashboard','clientes','nuevo','crear'].forEach(function(v){
-    var sec = (v==='dashboard')? 'dashboard' : (v+'-view');
-    if(view===v){ show(sec); document.getElementById('t-'+v).setAttribute('aria-current','page'); }
-    else { hide(sec); document.getElementById('t-'+v).setAttribute('aria-current','false'); }
-  });
-  if(view==='dashboard') renderKPIs();
-  if(view==='clientes') { renderClientes(); hide('detalle'); }
-  if(view==='nuevo') fillSelClientes();
-}
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLKCGnKyr6iM0QuShBnfm sR9VgzStXlo",
+      authDomain: "liss-variedades-cobranza.firebaseapp.com",
+      projectId: "liss-variedades-cobranza",
+      storageBucket: "liss-variedades-cobranza.appspot.com",
+      messagingSenderId: "56696969375",
+      appId: "1:56696969375:web:fcd9246988fb06ec97106a"
+    };
 
-function renderKPIs(){
-  var capital=0, gan=0, cob=0, deuda=0;
-  (db.clientes||[]).forEach(function(c){
-    (c.pedidos||[]).forEach(function(p){
-      var g = Number(p.valor||0)*(Number(p.porc||0)/100) + Number(p.libra||0);
-      var pagado = (p.pagos||[]).reduce(function(a,x){ return a + Number(x.monto||0); },0);
-      capital += Number(p.valor||0);
-      gan += g;
-      cob += pagado;
-      deuda += (Number(p.total|| (Number(p.valor||0)+g)) - pagado);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const listaClientes = document.getElementById("listaClientes");
+    const clienteSelect = document.getElementById("clienteSelect");
+    const pedidosCliente = document.getElementById("pedidosCliente");
+    const resumenCliente = document.getElementById("resumenCliente");
+    const graficaCliente = document.getElementById("graficaCliente");
+    const listaPagos = document.getElementById("listaPagos");
+    const panelPrincipal = document.getElementById("panelPrincipal");
+    const panelPedidos = document.getElementById("panelPedidos");
+    const detalleCliente = document.getElementById("detalleCliente");
+    const infoCliente = document.getElementById("infoCliente");
+    const btnVolver = document.getElementById("btnVolver");
+    const btnAgregarPedidoCliente = document.getElementById("btnAgregarPedidoCliente");
+
+    const articuloCliente = document.getElementById("articuloCliente");
+    const valorCliente = document.getElementById("valorCliente");
+    const porcentajeCliente = document.getElementById("porcentajeCliente");
+    const libraCliente = document.getElementById("libraCliente");
+    const pagadoCliente = document.getElementById("pagadoCliente");
+
+    let clienteActual = null;
+    let grafico = null;
+
+    // === LISTAR CLIENTES ===
+    onSnapshot(collection(db, "clientes"), (snapshot) => {
+      listaClientes.innerHTML = "";
+      clienteSelect.innerHTML = "<option value=''>Selecciona un cliente</option>";
+      snapshot.forEach((docSnap) => {
+        const c = docSnap.data();
+        listaClientes.innerHTML += `
+          <div class="cliente-card" onclick="verCliente('${docSnap.id}')">
+            <strong>${c.nombre}</strong><br>
+            📞 ${c.telefono || "Sin teléfono"}<br>
+            📍 ${c.direccion || "Sin dirección"}
+          </div>
+        `;
+        clienteSelect.innerHTML += `<option value="${docSnap.id}">${c.nombre}</option>`;
+      });
     });
-  });
-  byId('k-capital').textContent = fmtRD(capital);
-  byId('k-ganancias').textContent = fmtRD(gan);
-  byId('k-cobrado').textContent = fmtRD(cob);
-  byId('k-deuda').textContent = fmtRD(deuda);
-}
 
-// ====== Clientes ======
-function renderClientes(){
-  var q = (byId('q').value||'').toLowerCase();
-  var tb = byId('tbClientes'); tb.innerHTML='';
-  (db.clientes||[]).filter(function(c){
-    return (c.nombre + ' ' + (c.telefono||'')).toLowerCase().indexOf(q) > -1;
-  }).forEach(function(cli){
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td>'+cli.nombre+'</td><td>'+(cli.telefono||'-')+'</td><td>'+((cli.pedidos||[]).length)+'</td>'+
-      '<td><button class="btn btn-ghost" onclick="verCliente(\''+cli.id+'\')">👁️ Ver</button> ' +
-      '<button class="btn btn-main" onclick="editarCliente(\''+cli.id+'\')">✏️ Editar</button></td>';
-    tb.appendChild(tr);
-  });
-}
+    // === FUNCIÓN PARA VER CLIENTE ===
+    window.verCliente = async (clienteId) => {
+      clienteActual = clienteId;
+      const clienteSnap = await getDoc(doc(db, "clientes", clienteId));
+      const c = clienteSnap.data();
+      infoCliente.innerHTML = `
+        <strong>${c.nombre}</strong><br>
+        📞 ${c.telefono || "Sin teléfono"}<br>
+        📍 ${c.direccion || "Sin dirección"}
+      `;
+      await actualizarPedidosCliente();
+      await cargarHistorialPagos();
+      panelPrincipal.style.display = "none";
+      panelPedidos.style.display = "none";
+      detalleCliente.style.display = "block";
+    };
 
-function verCliente(id){
-  var c = (db.clientes||[]).find(function(x){return x.id===id;});
-  if(!c) return;
-  var box = byId('detalle'); box.classList.remove('hidden');
-  var html = '<h2>'+c.nombre+'</h2><p class="note">Tel: '+(c.telefono||'N/D')+' — '+(c.email||'')+'</p>';
-  if(!c.pedidos || !c.pedidos.length){
-    html += '<p class="note">Sin pedidos.</p>';
-  }else{
-    html += '<table><thead><tr><th>Artículo</th><th>Total</th><th>Pagado</th><th>Deuda</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
-    c.pedidos.forEach(function(p){
-      var pagado = (p.pagos||[]).reduce(function(a,x){return a + Number(x.monto||0);},0);
-      var deuda = Number(p.total||0) - pagado;
-      var bclass = p.estado==='Entregado' ? 'b-ok' : (p.estado==='Disponible' ? 'b-info':'b-warn');
-      html += '<tr>'+
-        '<td><b>'+p.articulo+'</b><br><span class="note mono">Tracking: '+(p.tracking||'N/A')+' • '+p.fecha+'</span></td>'+
-        '<td>'+fmtRD(p.total)+'</td>'+
-        '<td>'+fmtRD(pagado)+'</td>'+
-        '<td>'+fmtRD(deuda)+'</td>'+
-        '<td><span class="badge '+bclass+'">'+p.estado+'</span></td>'+
-        '<td>'+
-          '<button class="btn btn-main" onclick="abono(\''+c.id+'\',\''+p.id+'\')">➕ Abono</button> '+
-          '<button class="btn btn-ghost" onclick="enviarRecibo(\''+c.id+'\',\''+p.id+'\')">🧾 Recibo</button>'+
-        '</td>'+
-      '</tr>';
-      if(p.pagos && p.pagos.length){
-        html += '<tr><td colspan="6"><details><summary>Historial de pagos ('+p.pagos.length+')</summary>'+
-          '<table style="margin-top:6px;width:100%"><thead><tr><th>Fecha</th><th>Monto</th></tr></thead><tbody>';
-        p.pagos.sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);}).forEach(function(pp){
-          html += '<tr><td class="mono">'+new Date(pp.fecha).toLocaleString()+'</td><td>'+fmtRD(pp.monto)+'</td></tr>';
-        });
-        html += '</tbody></table></details></td></tr>';
-      }
-    });
-    html += '</tbody></table>';
-  }
-  box.innerHTML = html;
-}
+    // === ACTUALIZAR PEDIDOS ===
+    async function actualizarPedidosCliente() {
+      const q = query(collection(db, "pedidos"), where("clienteId", "==", clienteActual));
+      const pedidosSnap = await getDocs(q);
+      pedidosCliente.innerHTML = "";
+      let total = 0, pagado = 0, pendiente = 0;
 
-function editarCliente(id){
-  var c = (db.clientes||[]).find(function(x){return x.id===id;});
-  if(!c) return;
-  byId('cId').value = c.id;
-  byId('cNombre').value = c.nombre||'';
-  byId('cTelefono').value = c.telefono||'';
-  byId('cEmail').value = c.email||'';
-  byId('cNotas').value = c.notas||'';
-  switchView('crear');
-}
+      const clienteSnap = await getDoc(doc(db, "clientes", clienteActual));
+      const c = clienteSnap.data();
 
-function fillSelClientes(){
-  var sel = byId('selCliente'); sel.innerHTML='';
-  (db.clientes||[]).forEach(function(c){
-    var o = document.createElement('option'); o.value=c.id; o.textContent=c.nombre; sel.appendChild(o);
-  });
-}
+      pedidosSnap.forEach((pDoc) => {
+        const p = pDoc.data();
+        total += p.total;
+        pagado += p.pagado;
+        pendiente += p.pendiente;
 
-function guardarCliente(){
-  var id = byId('cId').value;
-  var nombre = (byId('cNombre').value||'').trim();
-  var tel = (byId('cTelefono').value||'').trim();
-  var email = (byId('cEmail').value||'').trim();
-  var notas = (byId('cNotas').value||'').trim();
-  if(!nombre){ alert('Ingrese el nombre'); return; }
-  if(id){
-    var c = db.clientes.find(function(x){return x.id===id;});
-    if(c){ c.nombre=nombre; c.telefono=tel; c.email=email; c.notas=notas; }
-  }else{
-    db.clientes.push({ id: uid('cli'), nombre:nombre, telefono:tel, email:email, notas:notas, pedidos:[] });
-  }
-  save(); alert('✅ Cliente guardado');
-  byId('cId').value=''; byId('cNombre').value=''; byId('cTelefono').value=''; byId('cEmail').value=''; byId('cNotas').value='';
-  fillSelClientes(); renderClientes(); switchView('clientes');
-}
+        pedidosCliente.innerHTML += `
+          <div class="pedido-card" id="pedido-${pDoc.id}">
+            <strong>${p.articulo}</strong><br>
+            💰 Total: RD$${p.total.toFixed(2)}<br>
+            Pagado: RD$${p.pagado.toFixed(2)} | Pendiente: RD$${p.pendiente.toFixed(2)}<br>
+            <button class="pago-btn" onclick="mostrarCampoPago('${pDoc.id}')">💵 Registrar Pago</button>
+            <div class="campo-pago" id="campo-${pDoc.id}">
+              <input type="number" id="monto-${pDoc.id}" placeholder="Monto abonado">
+              <button onclick="registrarPago('${pDoc.id}','${c.nombre}')">Guardar</button>
+            </div>
+          </div>
+        `;
+      });
 
-function eliminarCliente(){
-  var id = byId('cId').value; if(!id){ alert('Abre un cliente para eliminar'); return; }
-  if(!confirm('¿Eliminar cliente y sus pedidos?')) return;
-  db.clientes = (db.clientes||[]).filter(function(c){return c.id!==id;});
-  save(); alert('🗑️ Eliminado'); renderClientes(); switchView('clientes');
-}
+      resumenCliente.innerHTML = `
+        💰 Total general: RD$${total.toFixed(2)} |
+        Pagado: RD$${pagado.toFixed(2)} |
+        Pendiente: RD$${pendiente.toFixed(2)}
+      `;
 
-// ====== Pedidos ======
-function limpiarPedido(){ ['pArticulo','pValor','pPorc','pLibra','pAnticipo','pTracking'].forEach(function(i){ byId(i).value=''; }); }
+      if (grafico) grafico.destroy();
+      grafico = new Chart(graficaCliente, {
+        type: "doughnut",
+        data: {
+          labels: ["Pagado", "Pendiente"],
+          datasets: [{ data: [pagado, pendiente], backgroundColor: ["#22c55e", "#f97316"] }]
+        },
+        options: { plugins: { title: { display: true, text: "Estado de Pagos" } } }
+      });
+    }
 
-function guardarPedido(){
-  var id = byId('selCliente').value;
-  var cli = (db.clientes||[]).find(function(c){return c.id===id;});
-  if(!cli){ alert('Selecciona un cliente'); return; }
-  var valor = Number(byId('pValor').value||0); if(!valor){ alert('Ingresa el valor'); return; }
-  var porc = Number(byId('pPorc').value||0);
-  var libra= Number(byId('pLibra').value||0);
-  var anticipo=Number(byId('pAnticipo').value||0);
-  var articulo=(byId('pArticulo').value||'Artículo sin nombre').trim();
-  var tracking=(byId('pTracking').value||'').trim();
-  var estado = byId('pEstado').value;
-  var total = valor + (valor*(porc/100)) + libra;
-  var ped = { id:uid('ped'), articulo:articulo, valor:valor, porc:porc, libra:libra, tracking:tracking, estado:estado, total:total, fecha:new Date().toLocaleDateString(), pagos:[] };
-  if(anticipo>0) ped.pagos.push({ id:uid('pay'), monto:anticipo, fecha:todayISO() });
-  cli.pedidos = cli.pedidos||[]; cli.pedidos.push(ped);
-  save(); alert('✅ Pedido guardado'); renderKPIs(); switchView('clientes'); renderClientes();
-}
+    // === MOSTRAR CAMPO DE PAGO ===
+    window.mostrarCampoPago = (id) => {
+      const campo = document.getElementById(`campo-${id}`);
+      campo.style.display = campo.style.display === "block" ? "none" : "block";
+    };
 
-function abono(cid,pid){
-  var cli = (db.clientes||[]).find(function(c){return c.id===cid;});
-  if(!cli) return;
-  var ped = (cli.pedidos||[]).find(function(p){return p.id===pid;});
-  if(!ped) return;
-  var pagado = (ped.pagos||[]).reduce(function(a,x){return a+Number(x.monto||0);},0);
-  var deuda = Number(ped.total||0) - pagado;
-  var monto = Number(prompt('Monto del abono (RD$)\nDeuda actual: '+fmtRD(deuda)));
-  if(!monto || isNaN(monto) || monto<=0){ alert('Monto inválido'); return; }
-  if(monto>deuda && !confirm('El monto supera la deuda. ¿Continuar?')) return;
-  ped.pagos = ped.pagos||[]; ped.pagos.push({ id:uid('pay'), monto:monto, fecha:todayISO() });
-  if((deuda - monto) <= 0) ped.estado = 'Entregado';
-  save();
-  if(confirm('¿Deseas enviar un recibo por WhatsApp para este pago?')) enviarRecibo(cid,pid);
-  verCliente(cid); renderKPIs();
-}
+    // === REGISTRAR PAGO + HISTORIAL ===
+    window.registrarPago = async (pedidoId, nombreCliente) => {
+      const monto = parseFloat(document.getElementById(`monto-${pedidoId}`).value) || 0;
+      if (monto <= 0) return alert("Ingresa un monto válido.");
 
-// ====== Recibo WhatsApp ======
-function buildRecibo(cli,ped){
-  var pagado = (ped.pagos||[]).reduce(function(a,x){return a+Number(x.monto||0);},0);
-  var total = Number(ped.total||0);
-  var resta = Math.max(0,total - pagado);
-  var msg  = '*LisS Variedades*%0A_Recibo de Pago_%0A%0A';
-  msg += '*Cliente:* ' + encodeURIComponent(cli.nombre) + '%0A';
-  msg += '*Teléfono:* ' + encodeURIComponent(cli.telefono||'N/D') + '%0A';
-  msg += '*Artículo:* ' + encodeURIComponent(ped.articulo) + '%0A';
-  msg += '*Tracking:* ' + encodeURIComponent(ped.tracking||'N/A') + '%0A';
-  msg += '*Total:* ' + encodeURIComponent(fmtRD(total)) + '%0A';
-  msg += '*Abonado:* ' + encodeURIComponent(fmtRD(pagado)) + '%0A';
-  msg += '*Pendiente:* ' + encodeURIComponent(fmtRD(resta)) + '%0A';
-  msg += '*Fecha:* ' + encodeURIComponent(new Date().toLocaleString()) + '%0A%0A';
-  msg += '¡Gracias por tu pago! 💛';
-  var tel = (cli.telefono||'').replace(/\D/g,'');
-  return {tel:tel,msg:msg};
-}
-function enviarRecibo(cid,pid){
-  var cli = (db.clientes||[]).find(function(c){return c.id===cid;});
-  if(!cli){ alert('Cliente no encontrado'); return; }
-  var ped = (cli.pedidos||[]).find(function(p){return p.id===pid;});
-  if(!ped){ alert('Pedido no encontrado'); return; }
-  var r = buildRecibo(cli,ped);
-  if(!r.tel){ alert('Agrega un teléfono válido al cliente'); return; }
-  var url = 'https://wa.me/' + r.tel + '?text=' + r.msg;
-  if(navigator.clipboard){ navigator.clipboard.writeText(url).catch(function(){}); }
-  window.open(url,'_blank');
-}
+      const pedidoRef = doc(db, "pedidos", pedidoId);
+      const pedidoSnap = await getDoc(pedidoRef);
+      const p = pedidoSnap.data();
 
-// ====== Backup ======
-function exportDB(){
-  var blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'LisS_backup_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click(); URL.revokeObjectURL(a.href);
-}
-function importDB(e){
-  var f = e.target.files[0]; if(!f) return;
-  var rd = new FileReader();
-  rd.onload = function(){
-    try{
-      var data = JSON.parse(rd.result);
-      if(!data || !Array.isArray(data.clientes)) throw 'Formato inválido';
-      db = data; save(); renderKPIs(); renderClientes(); fillSelClientes(); alert('✅ Datos importados');
-    }catch(err){ alert('Archivo inválido'); }
-  };
-  rd.readAsText(f);
-}
+      const nuevoPagado = p.pagado + monto;
+      const nuevoPendiente = p.total - nuevoPagado;
 
-// ====== Demo ======
-function loadDemo(){
-  if(!confirm('Esto reemplazará tus datos por un demo. ¿Continuar?')) return;
-  db = { clientes:[
-    { id:uid('cli'), nombre:'María Pérez', telefono:'8095551234', email:'maria@mail.com', notas:'', pedidos:[
-      { id:uid('ped'), articulo:'Bolso de mano', valor:600, porc:2, libra:190, tracking:'SP036611300T', estado:'En Tránsito', total:600+(600*0.02)+190, fecha:new Date().toLocaleDateString(), pagos:[{id:uid('pay'), monto:400, fecha:todayISO()}] }
-    ]},
-    { id:uid('cli'), nombre:'Juan Gómez', telefono:'8291112233', email:'juan@mail.com', notas:'', pedidos:[] }
-  ]};
-  save(); renderKPIs(); renderClientes(); fillSelClientes(); alert('Demo cargado');
-}
+      await updateDoc(pedidoRef, { pagado: nuevoPagado, pendiente: nuevoPendiente });
 
-// Init
-window.addEventListener('load', function(){
-  renderKPIs(); renderClientes(); fillSelClientes();
-});
-</script>
+      // === Guardar en colección /pagos ===
+      await addDoc(collection(db, "pagos"), {
+        clienteId: clienteActual,
+        clienteNombre: nombreCliente,
+        pedidoId,
+        articulo: p.articulo,
+        monto,
+        fecha: serverTimestamp()
+      });
+
+      alert("✅ Pago registrado correctamente");
+      await actualizarPedidosCliente();
+      await cargarHistorialPagos();
+    };
+
+    // === CARGAR HISTORIAL DE PAGOS ===
+    async function cargarHistorialPagos() {
+      const q = query(collection(db, "pagos"), where("clienteId", "==", clienteActual), orderBy("fecha", "desc"));
+      const pagosSnap = await getDocs(q);
+      listaPagos.innerHTML = "";
+
+      pagosSnap.forEach((pgDoc) => {
+        const pago = pgDoc.data();
+        const fecha = pago.fecha?.toDate().toLocaleString("es-DO") || "(fecha desconocida)";
+        listaPagos.innerHTML += `
+          <div class="pago-item">
+            💵 ${pago.articulo} - RD$${pago.monto.toFixed(2)}<br>
+            📅 ${fecha}
+          </div>
+        `;
+      });
+
+      if (!pagosSnap.size) listaPagos.innerHTML = "<em>No hay pagos registrados</em>";
+    }
+
+    // === VOLVER AL PANEL PRINCIPAL ===
+    btnVolver.onclick = () => {
+      detalleCliente.style.display = "none";
+      panelPrincipal.style.display = "block";
+      panelPedidos.style.display = "block";
+      clienteActual = null;
+    };
+  </script>
 </body>
 </html>
+
