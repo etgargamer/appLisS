@@ -1,12 +1,8 @@
-// AppLisS-GSheets v3.9
-// Fuente de datos: Google Sheets vía SheetDB
-// Configuración cargada desde config.json
-
+// AppLisS-GSheets v3.9.1 — look v3.7
 const state = {
   cfg: null,
   all: [],
-  filtered: [],
-  view: "pendientes", // o "completados"
+  view: "pendientes",
   search: "",
 };
 
@@ -68,13 +64,11 @@ function formatPhone(tel){
   tel = (tel||"").trim();
   if (!tel) return "";
   if (tel.startsWith("+")) return tel.replace(/[^\d]/g,"");
-  // prepend default country code
   const cc = (state.cfg && state.cfg.WHATSAPP_DEFAULT_CC) || "1";
   return `${cc}${tel.replace(/[^\d]/g,"")}`;
 }
 
 function toRowPayload(data){
-  // Adapt to SheetDB {data:[{...}]}
   return { data:[data] };
 }
 
@@ -96,7 +90,6 @@ async function apiCreate(row){
 
 async function apiUpdateById(id, patch){
   const {SHEETDB_URL, SHEET_NAME} = state.cfg;
-  // SheetDB update by search: /search?sheet=...&id=xxx
   const url = `${SHEETDB_URL}/search?sheet=${encodeURIComponent(SHEET_NAME)}&id=${encodeURIComponent(id)}`;
   const res = await fetch(url, {method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify(toRowPayload(patch))});
   if(!res.ok) throw new Error("No se pudo actualizar el registro");
@@ -131,7 +124,6 @@ function fillList(container, rows){
     q(".pagado", node).textContent = money(pagado);
     q(".restante", node).textContent = money(restante);
 
-    // actions
     const btnPrev = q(".btn-preview", node);
     btnPrev.addEventListener("click", ()=> openPreview(r));
 
@@ -146,7 +138,6 @@ function fillList(container, rows){
       if(isNaN(amount) || amount<=0){ toast("Monto inválido"); return; }
       const nuevo = (Number(r.pagado||0) + amount);
       const patch = { pagado: String(nuevo) };
-      // si completo, mover a COMPLETADO
       const totals = computeTotals({...r, pagado:nuevo});
       if (totals.restante <= 0) patch.status = "COMPLETADO";
       await apiUpdateById(r.id, patch);
@@ -192,14 +183,13 @@ async function saveForm(){
   const form = q("#form-item");
   const data = Object.fromEntries(new FormData(form).entries());
   const isEdit = !!data.id;
-  // defaults
   data.valor = data.valor || "0";
   data.porcentaje = data.porcentaje || "0";
   data.libra = data.libra || "0";
   data.pagado = data.pagado || (isEdit ? undefined : "0");
   data.status = data.status || (isEdit ? undefined : "PENDIENTE");
   if(!isEdit){
-    data.id = `${Date.now()}`; // simple consecutive id
+    data.id = `${Date.now()}`;
     data.fecha = new Date().toISOString();
   }
   if(isEdit){
@@ -234,12 +224,12 @@ function openPreview(row){
     </div>
   `;
   q("#modal-preview").showModal();
-  // bind buttons
   q("#btn-wa").onclick = ()=> openWA(row);
   q("#btn-copy").onclick = ()=> {
     const lines = card.innerText;
     navigator.clipboard.writeText(lines).then(()=> toast("Copiado"));
   };
+  q("#btn-close-preview").onclick = ()=> q("#modal-preview").close();
 }
 
 function openWA(row){
@@ -252,7 +242,6 @@ function openWA(row){
 
 async function loadAll(){
   const rows = await apiList();
-  // normalize numbers
   rows.forEach(r=>{
     r.valor = r.valor ? Number(r.valor) : 0;
     r.porcentaje = r.porcentaje ? Number(r.porcentaje) : 0;
@@ -302,11 +291,20 @@ function initForm(){
   });
 }
 
+function initSplash(){
+  // El CSS hará fadeOut a los 2s; aquí solo garantizamos que no bloquee interacciones
+  setTimeout(()=>{
+    const s = q("#splash");
+    if(s) s.style.pointerEvents = "none";
+  }, 1200);
+}
+
 async function boot(){
   await loadConfig();
   initTabs();
   initToolbar();
   initForm();
+  initSplash();
   await loadAll();
 }
 

@@ -5,7 +5,12 @@
   "WHATSAPP_DEFAULT_CC": "1",
   "CURRENCY": "RD$",
   "THEME": {
-    "primary": "#0f172a",
-    "accent": "#22c55e"
+    "ink": "#e5e7eb",
+    "bg": "#0b1220",
+    "card": "rgba(15,23,42,.55)",
+    "blur": "10px",
+    "accent": "#10b981",
+    "muted": "#9ca3af",
+    "border": "rgba(148,163,184,.35)"
   }
 }
