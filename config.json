@@ -1,0 +1,11 @@
+{
+  "SHEETDB_URL": "https://sheetdb.io/api/v1/avsi1ki6gcrlr",
+  "SHEET_NAME": "AppLisS",
+  "BRAND_NAME": "Liss Variedades 🛍️",
+  "WHATSAPP_DEFAULT_CC": "1",
+  "CURRENCY": "RD$",
+  "THEME": {
+    "primary": "#0f172a",
+    "accent": "#22c55e"
+  }
+}

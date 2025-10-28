@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AppLisS v3.9 — GSheets/SheetDB</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="favicon.png" alt="Logo" class="logo">
+      <h1>AppLisS <span class="ver">v3.9</span></h1>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="pendientes">Pendientes</button>
+      <button class="tab-btn" data-tab="completados">Completados</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <button id="btn-add" class="primary">+ Nuevo</button>
+      <button id="btn-sync" class="ghost">↻ Actualizar</button>
+      <div class="spacer"></div>
+      <label class="search">
+        <input id="search" type="search" placeholder="Buscar por cliente, artículo o tracking…">
+      </label>
+    </section>
+
+    <section id="pendientes" class="tab-panel active">
+      <div id="list-pendientes" class="cards"></div>
+    </section>
+
+    <section id="completados" class="tab-panel">
+      <div id="list-completados" class="cards"></div>
+    </section>
+  </main>
+
+  <!-- Modal: Nuevo/Editar -->
+  <dialog id="modal-form">
+    <form id="form-item" method="dialog">
+      <h2 id="form-title">Nuevo Pedido</h2>
+      <div class="grid">
+        <label>Cliente<input name="cliente" required></label>
+        <label>Teléfono<input name="telefono" placeholder="+1 809..." required></label>
+        <label>Artículo<input name="articulo" required></label>
+        <label>Valor (artículo)<input name="valor" type="number" min="0" step="0.01" required></label>
+        <label>% aplicado<input name="porcentaje" type="number" min="0" step="0.01" value="0"></label>
+        <label>Libra (opcional)<input name="libra" type="number" min="0" step="0.01" value="0"></label>
+        <label>Tracking<input name="tracking" placeholder="XXXXXXXXXX"></label>
+      </div>
+      <div class="calc-row">
+        <output id="preview-total">Total: —</output>
+      </div>
+      <menu class="modal-actions">
+        <button value="cancel" class="ghost">Cancelar</button>
+        <button id="btn-save" value="default" class="primary">Guardar</button>
+      </menu>
+      <input type="hidden" name="id">
+    </form>
+  </dialog>
+
+  <!-- Modal: Vista previa / Factura -->
+  <dialog id="modal-preview">
+    <article id="preview-card" class="invoice"></article>
+    <menu class="modal-actions">
+      <button id="btn-copy" class="ghost">Copiar</button>
+      <button id="btn-wa" class="primary">Enviar por WhatsApp</button>
+      <button id="btn-close-preview" class="ghost">Cerrar</button>
+    </menu>
+  </dialog>
+
+  <template id="card-template">
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <h3 class="title"></h3>
+          <div class="meta"></div>
+        </div>
+        <div class="totals">
+          <div><b>Total:</b> <span class="total"></span></div>
+          <div><b>Pagado:</b> <span class="pagado"></span></div>
+          <div><b>Restante:</b> <span class="restante"></span></div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="ghost btn-preview">Vista previa</button>
+        <button class="ghost btn-pay">Registrar pago</button>
+        <button class="ghost btn-edit">Editar</button>
+        <button class="ghost btn-wa">Factura WhatsApp</button>
+      </div>
+    </div>
+  </template>
+
+  <div id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
