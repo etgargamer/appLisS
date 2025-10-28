@@ -1,0 +1,8 @@
+/* AppLisS - Estilos base */
+body {
+  font-family: system-ui, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 20px;
+}
