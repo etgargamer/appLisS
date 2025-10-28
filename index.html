@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LisS Variedades – App de Cobranza (v2) con Recibos WhatsApp</title>
+  <title>LisS Variedades – App de Cobranza (GitHub Pages) + Recibos WhatsApp</title>
   <style>
     :root{
       --bg:#0f172a;--bg-card:#1e293b;--primary:#22d3ee;--text:#e2e8f0;--muted:#94a3b8;
@@ -15,7 +15,7 @@
     header h1{margin:0;font-size:18px;letter-spacing:.2px}
     header .mini{opacity:.85;font-weight:500}
     nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:#0b1220;position:sticky;top:0;z-index:3}
-    .tab{background:#16233a;color:var(--text);border:none;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .18s;font-weight:600}
+    .tab{background:#16233a;color:var(--text);border:none;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .18s;font-weight:700}
     .tab[aria-current="page"],.tab:hover{background:var(--primary);color:#002235;transform:translateY(-1px)}
     .container{max-width:1240px;margin:0 auto;padding:18px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
@@ -51,10 +51,10 @@
 </head>
 <body>
   <header>
-    <h1>📋 LisS Variedades – <span class="mini">App de Cobranza v2</span></h1>
+    <h1>📋 LisS Variedades – <span class="mini">App de Cobranza</span></h1>
     <div class="toolbar">
-      <button class="btn secondary" id="btn-export">⬇️ Exportar datos</button>
-      <label class="btn secondary" for="import-file">⬆️ Importar datos</label>
+      <button class="btn secondary" id="btn-export">⬇️ Exportar</button>
+      <label class="btn secondary" for="import-file">⬆️ Importar</label>
       <input type="file" id="import-file" accept="application/json" class="hidden" />
     </div>
   </header>
@@ -64,7 +64,6 @@
     <button class="tab" data-view="clientes">Clientes</button>
     <button class="tab" data-view="nuevo">Nuevo Pedido</button>
     <button class="tab" data-view="crear">Nuevo Cliente</button>
-    <button class="tab" data-view="reportes">Reportes</button>
   </nav>
 
   <div class="container">
@@ -172,31 +171,6 @@
         </div>
       </form>
     </section>
-
-    <!-- REPORTES -->
-    <section id="reportes" class="card hidden">
-      <h2>Reportes mensuales</h2>
-      <div class="row">
-        <div>
-          <label>Mes</label>
-          <select id="rep-mes"></select>
-        </div>
-        <div>
-          <label>Año</label>
-          <select id="rep-anio"></select>
-        </div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="kpi"><h3>Capital (valor)</h3><b id="r-capital">RD$ 0.00</b></div>
-        <div class="kpi"><h3>Porcentaje</h3><b id="r-porcentaje">RD$ 0.00</b></div>
-        <div class="kpi"><h3>Libra</h3><b id="r-libra">RD$ 0.00</b></div>
-        <div class="kpi"><h3>Ganancias</h3><b id="r-ganancias">RD$ 0.00</b></div>
-        <div class="kpi"><h3>Cobrado</h3><b id="r-cobrado">RD$ 0.00</b></div>
-        <div class="kpi"><h3>Por cobrar</h3><b id="r-deuda">RD$ 0.00</b></div>
-      </div>
-      <div class="hr"></div>
-      <div id="rep-tabla"></div>
-    </section>
   </div>
 
   <script>
@@ -215,8 +189,7 @@
       dashboard: document.querySelector('#dashboard'),
       clientes: document.querySelector('#clientes-view'),
       nuevo: document.querySelector('#nuevo-view'),
-      crear: document.querySelector('#crear-view'),
-      reportes: document.querySelector('#reportes')
+      crear: document.querySelector('#crear-view')
     };
 
     function switchView(view){
@@ -226,7 +199,6 @@
       if(view==='clientes') renderClientes();
       if(view==='dashboard') renderDashboard();
       if(view==='nuevo') fillClientesSelect();
-      if(view==='reportes') renderReportesUI();
     }
 
     document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
@@ -299,6 +271,38 @@
       switchView('crear');
     }
 
+    // ====== WhatsApp Recibo helpers ======
+    function buildWhatsAppReceipt(cli, ped){
+      const pagado = (ped.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+      const total = Number(ped.total||0);
+      const resta = Math.max(0, total - pagado);
+      const titulo = '*LisS Variedades*%0A_Recibo de Pago_%0A%0A';
+      const cuerpo =
+        `*Cliente:* ${encodeURIComponent(cli.nombre)}%0A` +
+        `*Teléfono:* ${encodeURIComponent(cli.telefono||'N/D')}%0A` +
+        `*Artículo:* ${encodeURIComponent(ped.articulo)}%0A` +
+        `*Tracking:* ${encodeURIComponent(ped.tracking||'N/A')}%0A` +
+        `*Total:* ${encodeURIComponent(fmtRD(total))}%0A` +
+        `*Abonado:* ${encodeURIComponent(fmtRD(pagado))}%0A` +
+        `*Pendiente:* ${encodeURIComponent(fmtRD(resta))}%0A` +
+        `*Fecha:* ${encodeURIComponent(new Date().toLocaleString())}%0A%0A` +
+        `¡Gracias por tu pago! 💛`;
+      const msg = titulo + cuerpo;
+      const tel = (cli.telefono||'').replace(/\\D/g,'');
+      return { msg, tel, total, pagado, resta };
+    }
+
+    function sendWhatsApp(cli, ped){
+      const r = buildWhatsAppReceipt(cli, ped);
+      if(!r.tel){
+        alert('El cliente no tiene teléfono válido. Edítalo y vuelve a intentarlo.');
+        return;
+      }
+      const url = \`https://wa.me/\${r.tel}?text=\${r.msg}\`;
+      navigator.clipboard?.writeText(url).catch(()=>{});
+      window.open(url,'_blank');
+    }
+
     // Detalle + pagos + recibo WhatsApp
     function renderClienteDetalle(c){
       const box = $detalle();
@@ -325,9 +329,9 @@
             <td>\${fmtRD(pagado)}</td>
             <td>\${fmtRD(deuda)}</td>
             <td><span class='badge \${sClass}'>\${p.estado}</span></td>
-            <td>
+            <td class='mono'>
               <button class='btn' data-abono='\${p.id}' data-cid='\${c.id}'>➕ Abono</button>
-              <button class='btn secondary' data-recibo='\${p.id}' data-cid='\${c.id}'>🧾 Recibo</button>
+              <button class='btn secondary' data-recibo='\${p.id}' data-cid='\${c.id}'>🧾 Enviar recibo</button>
             </td>
           </tr>\`;
           // historial
@@ -357,41 +361,29 @@
         const deuda = Number(ped.total) - pagado;
         const monto = Number(prompt(\`Monto del abono (RD$)\\nDeuda actual: \${fmtRD(deuda)}\`));
         if(isNaN(monto) || monto<=0) return alert('Monto inválido');
+        // Validar sobrepago
+        if(monto > deuda){
+          if(!confirm(\`El monto (\${fmtRD(monto)}) supera la deuda (\${fmtRD(deuda)}). ¿Deseas continuar?\`)) return;
+        }
         ped.pagos = ped.pagos || [];
         ped.pagos.push({ id: uid('pay'), monto, fecha: todayISO() });
         const nuevaDeuda = Number(ped.total) - (pagado + monto);
         if(nuevaDeuda <= 0) ped.estado = 'Entregado';
         save();
+        // Preguntar por recibo
+        if(confirm('¿Deseas enviar un recibo por WhatsApp para este pago?')){
+          sendWhatsApp(cli, ped);
+        }
         renderClienteDetalle(cli);
         renderDashboard();
       }));
 
-      // Recibo por WhatsApp
+      // Botón "Enviar recibo" manual
       box.querySelectorAll('[data-recibo]').forEach(b=> b.addEventListener('click',()=>{
         const cli = db.clientes.find(x=>x.id===b.dataset.cid);
         const ped = cli?.pedidos?.find(pp=>pp.id===b.dataset.recibo);
         if(!ped) return alert('Pedido no encontrado');
-        const pagado = (ped.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
-        const total = Number(ped.total||0);
-        const resta = total - pagado;
-        // Construir mensaje con formato
-        const titulo = '*LisS Variedades*%0A_Recibo de Pago_%0A%0A';
-        const cuerpo =
-          `*Cliente:* ${encodeURIComponent(cli.nombre)}%0A` +
-          `*Teléfono:* ${encodeURIComponent(cli.telefono||'N/D')}%0A` +
-          `*Artículo:* ${encodeURIComponent(ped.articulo)}%0A` +
-          `*Tracking:* ${encodeURIComponent(ped.tracking||'N/A')}%0A` +
-          `*Total:* ${encodeURIComponent(fmtRD(total))}%0A` +
-          `*Abonado:* ${encodeURIComponent(fmtRD(pagado))}%0A` +
-          `*Pendiente:* ${encodeURIComponent(fmtRD(resta))}%0A` +
-          `*Fecha:* ${encodeURIComponent(new Date().toLocaleString())}%0A%0A` +
-          `¡Gracias por tu pago! 💛`;
-        const msg = titulo + cuerpo;
-        const tel = (cli.telefono||'').replace(/\\D/g,'');
-        if(!tel){ alert('El cliente no tiene teléfono válido. Edítalo y vuelve a intentarlo.'); return; }
-        const url = \`https://wa.me/\${tel}?text=\${msg}\`;
-        navigator.clipboard.writeText(url).catch(()=>{});
-        window.open(url,'_blank');
+        sendWhatsApp(cli, ped);
       }));
     }
 
@@ -477,79 +469,6 @@
     });
 
     // =====================
-    // Reportes Mensuales
-    // =====================
-    function renderReportesUI(){
-      const mesSel = document.getElementById('rep-mes');
-      const anioSel = document.getElementById('rep-anio');
-      if(!mesSel.dataset.ready){
-        const meses = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-        mesSel.innerHTML = meses.map((m,i)=>`<option value='${m}'>${i+1}</option>`).join('');
-        const y = new Date().getFullYear();
-        anioSel.innerHTML = Array.from({length:6},(_,k)=>y-4+k).map(v=>`<option>${v}</option>`).join('');
-        mesSel.value = String(new Date().getMonth()+1).padStart(2,'0');
-        anioSel.value = String(new Date().getFullYear());
-        mesSel.dataset.ready = '1';
-        mesSel.addEventListener('change', renderReporte);
-        anioSel.addEventListener('change', renderReporte);
-      }
-      renderReporte();
-    }
-
-    function renderReporte(){
-      const mes = document.getElementById('rep-mes').value;
-      const anio = document.getElementById('rep-anio').value;
-      const ini = new Date(`${anio}-${mes}-01T00:00:00`);
-      const fin = new Date(new Date(ini).setMonth(ini.getMonth()+1));
-
-      let capital=0, porcentaje=0, libra=0, ganancias=0, cobrado=0, deuda=0;
-      const filas=[];
-
-      db.clientes.forEach(c=> (c.pedidos||[]).forEach(p=>{
-        const creado = new Date(p.fecha|| new Date());
-        const g = p.valor*(p.porc/100) + p.libra;
-        const pagadoMes = (p.pagos||[])
-          .filter(x=>{ const d=new Date(x.fecha); return d>=ini && d<fin; })
-          .reduce((a,x)=>a+Number(x.monto||0),0);
-        // Capital/ganancias contabilizados por creación del pedido en el mes seleccionado
-        if(creado>=ini && creado<fin){
-          capital += Number(p.valor||0);
-          porcentaje += Number(p.valor*(p.porc/100)||0);
-          libra += Number(p.libra||0);
-          ganancias += Number(g||0);
-        }
-        cobrado += pagadoMes;
-        const totalPagadoHistorico = (p.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
-        deuda += (Number(p.total|| (p.valor+g)) - totalPagadoHistorico);
-
-        filas.push(`<tr>
-          <td>${c.nombre}</td>
-          <td>${p.articulo}</td>
-          <td class='mono'>${p.fecha}</td>
-          <td>${fmtRD(p.valor)}</td>
-          <td>${fmtRD(p.valor*(p.porc/100))}</td>
-          <td>${fmtRD(p.libra)}</td>
-          <td>${fmtRD(g)}</td>
-          <td>${fmtRD(pagadoMes)}</td>
-        </tr>`);
-      }));
-
-      document.getElementById('r-capital').textContent = fmtRD(capital);
-      document.getElementById('r-porcentaje').textContent = fmtRD(porcentaje);
-      document.getElementById('r-libra').textContent = fmtRD(libra);
-      document.getElementById('r-ganancias').textContent = fmtRD(ganancias);
-      document.getElementById('r-cobrado').textContent = fmtRD(cobrado);
-      document.getElementById('r-deuda').textContent = fmtRD(deuda);
-
-      document.getElementById('rep-tabla').innerHTML = `<div style='overflow:auto'>
-        <table>
-          <thead><tr><th>Cliente</th><th>Artículo</th><th>Fecha</th><th>Capital</th><th>%</th><th>Libra</th><th>Ganancia</th><th>Cobrado (mes)</th></tr></thead>
-          <tbody>${filas.join('')}</tbody>
-        </table>
-      </div>`;
-    }
-
-    // =====================
     // Export / Import (backup manual para subir a GitHub/Drive)
     // =====================
     document.getElementById('btn-export').addEventListener('click',()=>{
@@ -585,7 +504,7 @@
       db = {
         clientes:[
           {id:uid('cli'), nombre:'María Pérez', telefono:'8095551234', email:'maria@mail.com', notas:'Cliente frecuente', pedidos:[
-            {id:uid('ped'), articulo:'Bolso de mano', valor:600, porc:2, libra:190, tracking:'TRK-001', estado:'En Tránsito', total:600+(600*0.02)+190, fecha:new Date().toLocaleDateString(), pagos:[{id:uid('pay'),monto:400,fecha:todayISO()}]},
+            {id:uid('ped'), articulo:'Bolso de mano', valor:600, porc:2, libra:190, tracking:'SP036611300T', estado:'En Tránsito', total:600+(600*0.02)+190, fecha:new Date().toLocaleDateString(), pagos:[{id:uid('pay'),monto:400,fecha:todayISO()}]},
             {id:uid('ped'), articulo:'Zapatos', valor:1200, porc:3, libra:250, tracking:'TRK-002', estado:'Disponible', total:1200+(1200*0.03)+250, fecha:new Date().toLocaleDateString(), pagos:[]}
           ]},
           {id:uid('cli'), nombre:'Juan Gómez', telefono:'8291112233', email:'juan@mail.com', notas:'', pedidos:[]}
