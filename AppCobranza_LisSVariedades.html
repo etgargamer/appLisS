@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LisS Variedades – App de Cobranza (v2) con Recibos WhatsApp</title>
+  <style>
+    :root{
+      --bg:#0f172a;--bg-card:#1e293b;--primary:#22d3ee;--text:#e2e8f0;--muted:#94a3b8;
+      --success:#16a34a;--warning:#f59e0b;--danger:#ef4444;--ink:#0b1220
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    header{background:#111827;padding:16px;border-bottom:2px solid var(--primary);display:flex;gap:12px;align-items:center;justify-content:space-between}
+    header h1{margin:0;font-size:18px;letter-spacing:.2px}
+    header .mini{opacity:.85;font-weight:500}
+    nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:#0b1220;position:sticky;top:0;z-index:3}
+    .tab{background:#16233a;color:var(--text);border:none;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .18s;font-weight:600}
+    .tab[aria-current="page"],.tab:hover{background:var(--primary);color:#002235;transform:translateY(-1px)}
+    .container{max-width:1240px;margin:0 auto;padding:18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .card{background:var(--bg-card);padding:18px;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+    h2{margin:0 0 10px;color:var(--primary);font-size:20px}
+    h3{margin:8px 0;color:var(--text)}
+    label{font-size:14px;color:var(--muted);display:block;margin-top:10px}
+    input,select,textarea{width:100%;padding:11px 12px;margin-top:6px;background:#0b1220;border:1px solid #2b3952;border-radius:10px;color:var(--text);font-size:14px}
+    textarea{min-height:90px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:2px solid var(--primary)}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .btn{margin-top:12px;padding:10px 14px;border:none;border-radius:10px;cursor:pointer;background:var(--primary);color:#001721;font-weight:700}
+    .btn:hover{filter:saturate(120%) brightness(1.05)}
+    .btn.secondary{background:#334155;color:#dbeafe}
+    .btn.warn{background:var(--warning);color:#1f1300}
+    .btn.danger{background:var(--danger)}
+    .kpi{background:#0b1220;border:1px solid #22314d;border-radius:12px;padding:14px}
+    .kpi b{font-size:18px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid #2b3952;text-align:left}
+    th{color:#98a9c6;background:#0b1220;position:sticky;top:64px}
+    .hidden{display:none}
+    .badge{padding:3px 8px;border-radius:8px;font-size:12px;font-weight:700}
+    .s-transito{background:var(--warning);color:#1f1300}
+    .s-disponible{background:#06b6d4;color:#00212a}
+    .s-entregado{background:var(--success);color:#041106}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+    .pill{background:#0b1220;border:1px solid #22314d;border-radius:999px;padding:6px 10px;font-size:12px;color:#98a9c6}
+    .hr{height:1px;background:#22314d;margin:12px 0}
+    @media (max-width: 640px){ .row{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📋 LisS Variedades – <span class="mini">App de Cobranza v2</span></h1>
+    <div class="toolbar">
+      <button class="btn secondary" id="btn-export">⬇️ Exportar datos</button>
+      <label class="btn secondary" for="import-file">⬆️ Importar datos</label>
+      <input type="file" id="import-file" accept="application/json" class="hidden" />
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab" data-view="dashboard" aria-current="page">Dashboard</button>
+    <button class="tab" data-view="clientes">Clientes</button>
+    <button class="tab" data-view="nuevo">Nuevo Pedido</button>
+    <button class="tab" data-view="crear">Nuevo Cliente</button>
+    <button class="tab" data-view="reportes">Reportes</button>
+  </nav>
+
+  <div class="container">
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="grid">
+      <div class="card kpi"><h2>Capital</h2><b id="k-capital">RD$ 0.00</b><div class="pill">Invertido</div></div>
+      <div class="card kpi"><h2>Ganancias</h2><b id="k-ganancias">RD$ 0.00</b><div class="pill">% + Libra</div></div>
+      <div class="card kpi"><h2>Cobrado</h2><b id="k-cobrado">RD$ 0.00</b><div class="pill">Pagos recibidos</div></div>
+      <div class="card kpi"><h2>Por cobrar</h2><b id="k-deuda">RD$ 0.00</b><div class="pill">Deuda actual</div></div>
+      <div class="card">
+        <h2>Accesos rápidos</h2>
+        <div class="toolbar">
+          <button class="btn" onclick="switchView('nuevo')">➕ Crear Pedido</button>
+          <button class="btn" onclick="switchView('crear')">👤 Nuevo Cliente</button>
+          <button class="btn secondary" id="btn-reset-demo">🧪 Cargar demo</button>
+        </div>
+        <p class="muted">Consejo: exporta tus datos y súbelos a GitHub/Drive para tener copia en la nube.</p>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="clientes-view" class="card hidden">
+      <h2>Clientes</h2>
+      <div class="toolbar">
+        <input id="buscar-cliente" placeholder="Buscar por nombre o teléfono" />
+        <button class="btn secondary" onclick="switchView('crear')">➕ Nuevo</button>
+      </div>
+      <table id="tabla-clientes">
+        <thead><tr><th>Cliente</th><th>Teléfono</th><th>Pedidos</th><th>Acciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="detalle-cliente" class="card hidden"></div>
+    </section>
+
+    <!-- NUEVO PEDIDO -->
+    <section id="nuevo-view" class="card hidden">
+      <h2>Nuevo Pedido</h2>
+      <div class="row">
+        <div>
+          <label>Cliente</label>
+          <select id="select-cliente"></select>
+        </div>
+        <div>
+          <label>Estado</label>
+          <select id="pedido-estado">
+            <option>En Tránsito</option>
+            <option>Disponible</option>
+            <option>Entregado</option>
+          </select>
+        </div>
+      </div>
+      <label>Artículo</label>
+      <input id="pedido-articulo" placeholder="Ej.: Bolso de mano" />
+      <div class="row">
+        <div>
+          <label>Valor (RD$)</label>
+          <input type="number" id="pedido-valor" placeholder="600" />
+        </div>
+        <div>
+          <label>Porcentaje (%)</label>
+          <input type="number" id="pedido-porc" placeholder="2" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Libra (RD$)</label>
+          <input type="number" id="pedido-libra" placeholder="190" />
+        </div>
+        <div>
+          <label>Pago inicial (RD$)</label>
+          <input type="number" id="pedido-anticipo" placeholder="400" />
+        </div>
+      </div>
+      <label>Tracking</label>
+      <input id="pedido-tracking" placeholder="XXXXXXXX" />
+      <div class="toolbar">
+        <button class="btn" id="btn-guardar-pedido">💾 Guardar Pedido</button>
+        <button class="btn secondary" id="btn-clear-pedido">↺ Limpiar</button>
+      </div>
+    </section>
+
+    <!-- CREAR / EDITAR CLIENTE -->
+    <section id="crear-view" class="card hidden">
+      <h2>Cliente</h2>
+      <form id="form-cliente">
+        <input type="hidden" id="cliente-id" />
+        <label>Nombre</label>
+        <input id="cliente-nombre" required placeholder="Ej.: María Pérez" />
+        <div class="row">
+          <div>
+            <label>Teléfono</label>
+            <input id="cliente-telefono" required placeholder="Ej.: 8095551234" />
+          </div>
+          <div>
+            <label>Correo</label>
+            <input id="cliente-email" type="email" placeholder="Ej.: maria@gmail.com" />
+          </div>
+        </div>
+        <label>Notas</label>
+        <textarea id="cliente-notas" placeholder="Observaciones"></textarea>
+        <div class="toolbar">
+          <button type="submit" class="btn">💾 Guardar</button>
+          <button type="button" class="btn danger" id="btn-eliminar">🗑️ Eliminar</button>
+          <button type="button" class="btn secondary" onclick="switchView('clientes')">↩︎ Volver</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- REPORTES -->
+    <section id="reportes" class="card hidden">
+      <h2>Reportes mensuales</h2>
+      <div class="row">
+        <div>
+          <label>Mes</label>
+          <select id="rep-mes"></select>
+        </div>
+        <div>
+          <label>Año</label>
+          <select id="rep-anio"></select>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div class="kpi"><h3>Capital (valor)</h3><b id="r-capital">RD$ 0.00</b></div>
+        <div class="kpi"><h3>Porcentaje</h3><b id="r-porcentaje">RD$ 0.00</b></div>
+        <div class="kpi"><h3>Libra</h3><b id="r-libra">RD$ 0.00</b></div>
+        <div class="kpi"><h3>Ganancias</h3><b id="r-ganancias">RD$ 0.00</b></div>
+        <div class="kpi"><h3>Cobrado</h3><b id="r-cobrado">RD$ 0.00</b></div>
+        <div class="kpi"><h3>Por cobrar</h3><b id="r-deuda">RD$ 0.00</b></div>
+      </div>
+      <div class="hr"></div>
+      <div id="rep-tabla"></div>
+    </section>
+  </div>
+
+  <script>
+    // =====================
+    // Utils
+    // =====================
+    const SKEY = 'lissCobranzaDB_v2';
+    const uid = p => \`\${p||'id'}_\${Date.now()}_\${Math.random().toString(36).slice(2,7)}\`;
+    const fmtRD = n => \`RD$ \${Number(n||0).toFixed(2)}\`;
+    const todayISO = () => new Date().toISOString();
+
+    let db = JSON.parse(localStorage.getItem(SKEY) || '{\"clientes\":[]}');
+    const save = () => localStorage.setItem(SKEY, JSON.stringify(db));
+
+    const views = {
+      dashboard: document.querySelector('#dashboard'),
+      clientes: document.querySelector('#clientes-view'),
+      nuevo: document.querySelector('#nuevo-view'),
+      crear: document.querySelector('#crear-view'),
+      reportes: document.querySelector('#reportes')
+    };
+
+    function switchView(view){
+      Object.values(views).forEach(v=>v.classList.add('hidden'));
+      views[view].classList.remove('hidden');
+      document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-current', b.dataset.view===view? 'page':'false'));
+      if(view==='clientes') renderClientes();
+      if(view==='dashboard') renderDashboard();
+      if(view==='nuevo') fillClientesSelect();
+      if(view==='reportes') renderReportesUI();
+    }
+
+    document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+
+    // =====================
+    // Dashboard KPIs
+    // =====================
+    function renderDashboard(){
+      let capital=0, ganancia=0, cobrado=0, deuda=0;
+      db.clientes.forEach(c=> (c.pedidos||[]).forEach(p=>{
+        const g = p.valor*(p.porc/100) + p.libra; // ganancias = % del valor + libra
+        const pagado = (p.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+        capital += Number(p.valor||0);
+        ganancia += Number(g||0);
+        cobrado += pagado;
+        deuda += (Number(p.total|| (p.valor+g)) - pagado);
+      }));
+      document.getElementById('k-capital').textContent = fmtRD(capital);
+      document.getElementById('k-ganancias').textContent = fmtRD(ganancia);
+      document.getElementById('k-cobrado').textContent = fmtRD(cobrado);
+      document.getElementById('k-deuda').textContent = fmtRD(deuda);
+    }
+
+    // =====================
+    // Clientes
+    // =====================
+    const $tbody = () => document.querySelector('#tabla-clientes tbody');
+    const $detalle = () => document.querySelector('#detalle-cliente');
+
+    document.getElementById('buscar-cliente')?.addEventListener('input', (e)=>{
+      renderClientes(e.target.value.trim().toLowerCase());
+    });
+
+    function renderClientes(filtro=''){
+      const tb = $tbody();
+      tb.innerHTML='';
+      (db.clientes||[])
+        .filter(c=> (c.nombre+ (c.telefono||'')).toLowerCase().includes(filtro))
+        .forEach(cli=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = \`<td>\${cli.nombre}</td><td>\${cli.telefono||'-'}</td><td>\${(cli.pedidos||[]).length}</td>
+                          <td>
+                            <button class='btn secondary' data-ver='\${cli.id}'>👁️ Ver</button>
+                            <button class='btn' data-edit='\${cli.id}'>✏️ Editar</button>
+                          </td>\`;
+          tb.appendChild(tr);
+        });
+
+      // listeners
+      tb.querySelectorAll('[data-ver]').forEach(b=> b.addEventListener('click',()=>{
+        const c = db.clientes.find(x=>x.id===b.dataset.ver);
+        if(!c) return;
+        renderClienteDetalle(c);
+      }));
+      tb.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click',()=>{
+        const c = db.clientes.find(x=>x.id===b.dataset.edit);
+        if(!c) return;
+        openClienteForm(c);
+      }));
+
+      $detalle().classList.add('hidden');
+    }
+
+    function openClienteForm(c){
+      document.querySelector('#cliente-id').value = c?.id || '';
+      document.querySelector('#cliente-nombre').value = c?.nombre || '';
+      document.querySelector('#cliente-telefono').value = c?.telefono || '';
+      document.querySelector('#cliente-email').value = c?.email || '';
+      document.querySelector('#cliente-notas').value = c?.notas || '';
+      switchView('crear');
+    }
+
+    // Detalle + pagos + recibo WhatsApp
+    function renderClienteDetalle(c){
+      const box = $detalle();
+      box.classList.remove('hidden');
+      let html = \`<h3>\${c.nombre}</h3><p class='mono'>Tel: \${c.telefono||'N/D'} — \${c.email||''}</p>\`;
+
+      if(!c.pedidos || c.pedidos.length===0){
+        html += '<p>Sin pedidos.</p>';
+      } else {
+        html += \`<table><thead><tr>
+                  <th>Artículo</th><th>Total</th><th>Pagado</th><th>Deuda</th><th>Estado</th><th>Acciones</th>
+                 </tr></thead><tbody>\`;
+        c.pedidos.forEach(p=>{
+          const pagado = (p.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+          const deuda = Number(p.total) - pagado;
+          const sClass = (p.estado||'').toLowerCase().includes('entregado') ? 's-entregado' : (p.estado||'').toLowerCase().includes('disponible')? 's-disponible':'s-transito';
+          html += \`<tr>
+            <td>
+              <div><b>\${p.articulo}</b></div>
+              <div class='mono' style='opacity:.8'>Tracking: \${p.tracking||'N/A'}</div>
+              <div class='mono' style='opacity:.8'>Creado: \${p.fecha}</div>
+            </td>
+            <td>\${fmtRD(p.total)}</td>
+            <td>\${fmtRD(pagado)}</td>
+            <td>\${fmtRD(deuda)}</td>
+            <td><span class='badge \${sClass}'>\${p.estado}</span></td>
+            <td>
+              <button class='btn' data-abono='\${p.id}' data-cid='\${c.id}'>➕ Abono</button>
+              <button class='btn secondary' data-recibo='\${p.id}' data-cid='\${c.id}'>🧾 Recibo</button>
+            </td>
+          </tr>\`;
+          // historial
+          if((p.pagos||[]).length){
+            const filas = p.pagos
+              .sort((a,b)=> new Date(b.fecha) - new Date(a.fecha))
+              .map(x=>\`<tr><td class='mono'>\${new Date(x.fecha).toLocaleString()}</td><td>\${fmtRD(x.monto)}</td></tr>\`)
+              .join('');
+            html += \`<tr><td colspan='6'>
+                      <details>
+                        <summary>Historial de pagos (\${p.pagos.length})</summary>
+                        <table style='margin-top:6px;width:100%'><thead><tr><th>Fecha</th><th>Monto</th></tr></thead><tbody>\${filas}</tbody></table>
+                      </details>
+                     </td></tr>\`;
+          }
+        });
+        html += '</tbody></table>';
+      }
+      box.innerHTML = html;
+
+      // Listeners dinámicos
+      box.querySelectorAll('[data-abono]').forEach(b=> b.addEventListener('click',()=>{
+        const cli = db.clientes.find(x=>x.id===b.dataset.cid);
+        const ped = cli?.pedidos?.find(pp=>pp.id===b.dataset.abono);
+        if(!ped) return alert('Pedido no encontrado');
+        const pagado = (ped.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+        const deuda = Number(ped.total) - pagado;
+        const monto = Number(prompt(\`Monto del abono (RD$)\\nDeuda actual: \${fmtRD(deuda)}\`));
+        if(isNaN(monto) || monto<=0) return alert('Monto inválido');
+        ped.pagos = ped.pagos || [];
+        ped.pagos.push({ id: uid('pay'), monto, fecha: todayISO() });
+        const nuevaDeuda = Number(ped.total) - (pagado + monto);
+        if(nuevaDeuda <= 0) ped.estado = 'Entregado';
+        save();
+        renderClienteDetalle(cli);
+        renderDashboard();
+      }));
+
+      // Recibo por WhatsApp
+      box.querySelectorAll('[data-recibo]').forEach(b=> b.addEventListener('click',()=>{
+        const cli = db.clientes.find(x=>x.id===b.dataset.cid);
+        const ped = cli?.pedidos?.find(pp=>pp.id===b.dataset.recibo);
+        if(!ped) return alert('Pedido no encontrado');
+        const pagado = (ped.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+        const total = Number(ped.total||0);
+        const resta = total - pagado;
+        // Construir mensaje con formato
+        const titulo = '*LisS Variedades*%0A_Recibo de Pago_%0A%0A';
+        const cuerpo =
+          `*Cliente:* ${encodeURIComponent(cli.nombre)}%0A` +
+          `*Teléfono:* ${encodeURIComponent(cli.telefono||'N/D')}%0A` +
+          `*Artículo:* ${encodeURIComponent(ped.articulo)}%0A` +
+          `*Tracking:* ${encodeURIComponent(ped.tracking||'N/A')}%0A` +
+          `*Total:* ${encodeURIComponent(fmtRD(total))}%0A` +
+          `*Abonado:* ${encodeURIComponent(fmtRD(pagado))}%0A` +
+          `*Pendiente:* ${encodeURIComponent(fmtRD(resta))}%0A` +
+          `*Fecha:* ${encodeURIComponent(new Date().toLocaleString())}%0A%0A` +
+          `¡Gracias por tu pago! 💛`;
+        const msg = titulo + cuerpo;
+        const tel = (cli.telefono||'').replace(/\\D/g,'');
+        if(!tel){ alert('El cliente no tiene teléfono válido. Edítalo y vuelve a intentarlo.'); return; }
+        const url = \`https://wa.me/\${tel}?text=\${msg}\`;
+        navigator.clipboard.writeText(url).catch(()=>{});
+        window.open(url,'_blank');
+      }));
+    }
+
+    function fillClientesSelect(){
+      const sel = document.querySelector('#select-cliente');
+      sel.innerHTML = '';
+      (db.clientes||[]).forEach(c=>{
+        const o=document.createElement('option'); o.value=c.id; o.textContent=c.nombre; sel.appendChild(o);
+      });
+    }
+
+    // =====================
+    // Nuevo Pedido
+    // =====================
+    document.getElementById('btn-clear-pedido').addEventListener('click',()=>{
+      ['pedido-articulo','pedido-valor','pedido-porc','pedido-libra','pedido-anticipo','pedido-tracking']
+        .forEach(id=> document.getElementById(id).value='');
+    });
+
+    document.getElementById('btn-guardar-pedido').addEventListener('click',()=>{
+      const id = document.getElementById('select-cliente').value;
+      const cli = db.clientes.find(c=>c.id===id);
+      if(!cli) return alert('Selecciona un cliente válido');
+      const valor = Number(document.getElementById('pedido-valor').value||0);
+      if(!valor) return alert('Ingresa el valor del artículo');
+      const porc = Number(document.getElementById('pedido-porc').value||0);
+      const libra = Number(document.getElementById('pedido-libra').value||0);
+      const anticipo = Number(document.getElementById('pedido-anticipo').value||0);
+      const articulo = (document.getElementById('pedido-articulo').value||'Artículo sin nombre').trim();
+      const tracking = (document.getElementById('pedido-tracking').value||'').trim();
+      const estado = document.getElementById('pedido-estado').value;
+
+      const total = valor + (valor*(porc/100)) + libra;
+      const pedido = {
+        id: uid('ped'), articulo, valor, porc, libra, tracking, estado, total,
+        fecha: new Date().toLocaleDateString(), pagos: []
+      };
+      if(anticipo>0) pedido.pagos.push({ id: uid('pay'), monto: anticipo, fecha: todayISO() });
+      cli.pedidos = cli.pedidos || [];
+      cli.pedidos.push(pedido);
+      save();
+      alert('✅ Pedido guardado');
+      renderDashboard();
+      switchView('clientes');
+      renderClientes();
+    });
+
+    // =====================
+    // Crear / Editar Cliente
+    // =====================
+    document.getElementById('form-cliente').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const id = document.getElementById('cliente-id').value;
+      const nombre = document.getElementById('cliente-nombre').value.trim();
+      const telefono = document.getElementById('cliente-telefono').value.trim();
+      const email = document.getElementById('cliente-email').value.trim();
+      const notas = document.getElementById('cliente-notas').value.trim();
+      if(!nombre) return alert('Ingrese el nombre');
+      if(id){
+        const c = db.clientes.find(x=>x.id===id);
+        if(c){ c.nombre=nombre; c.telefono=telefono; c.email=email; c.notas=notas; }
+      } else {
+        db.clientes.push({ id: uid('cli'), nombre, telefono, email, notas, pedidos: [] });
+      }
+      save();
+      alert('✅ Cliente guardado');
+      e.target.reset();
+      fillClientesSelect();
+      renderClientes();
+      switchView('clientes');
+    });
+
+    document.getElementById('btn-eliminar').addEventListener('click',()=>{
+      const id = document.getElementById('cliente-id').value;
+      if(!id) return alert('Abre un cliente para eliminar');
+      if(confirm('¿Eliminar cliente y sus pedidos?')){
+        db.clientes = db.clientes.filter(c=>c.id!==id);
+        save();
+        alert('🗑️ Eliminado');
+        renderClientes();
+        switchView('clientes');
+      }
+    });
+
+    // =====================
+    // Reportes Mensuales
+    // =====================
+    function renderReportesUI(){
+      const mesSel = document.getElementById('rep-mes');
+      const anioSel = document.getElementById('rep-anio');
+      if(!mesSel.dataset.ready){
+        const meses = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+        mesSel.innerHTML = meses.map((m,i)=>`<option value='${m}'>${i+1}</option>`).join('');
+        const y = new Date().getFullYear();
+        anioSel.innerHTML = Array.from({length:6},(_,k)=>y-4+k).map(v=>`<option>${v}</option>`).join('');
+        mesSel.value = String(new Date().getMonth()+1).padStart(2,'0');
+        anioSel.value = String(new Date().getFullYear());
+        mesSel.dataset.ready = '1';
+        mesSel.addEventListener('change', renderReporte);
+        anioSel.addEventListener('change', renderReporte);
+      }
+      renderReporte();
+    }
+
+    function renderReporte(){
+      const mes = document.getElementById('rep-mes').value;
+      const anio = document.getElementById('rep-anio').value;
+      const ini = new Date(`${anio}-${mes}-01T00:00:00`);
+      const fin = new Date(new Date(ini).setMonth(ini.getMonth()+1));
+
+      let capital=0, porcentaje=0, libra=0, ganancias=0, cobrado=0, deuda=0;
+      const filas=[];
+
+      db.clientes.forEach(c=> (c.pedidos||[]).forEach(p=>{
+        const creado = new Date(p.fecha|| new Date());
+        const g = p.valor*(p.porc/100) + p.libra;
+        const pagadoMes = (p.pagos||[])
+          .filter(x=>{ const d=new Date(x.fecha); return d>=ini && d<fin; })
+          .reduce((a,x)=>a+Number(x.monto||0),0);
+        // Capital/ganancias contabilizados por creación del pedido en el mes seleccionado
+        if(creado>=ini && creado<fin){
+          capital += Number(p.valor||0);
+          porcentaje += Number(p.valor*(p.porc/100)||0);
+          libra += Number(p.libra||0);
+          ganancias += Number(g||0);
+        }
+        cobrado += pagadoMes;
+        const totalPagadoHistorico = (p.pagos||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+        deuda += (Number(p.total|| (p.valor+g)) - totalPagadoHistorico);
+
+        filas.push(`<tr>
+          <td>${c.nombre}</td>
+          <td>${p.articulo}</td>
+          <td class='mono'>${p.fecha}</td>
+          <td>${fmtRD(p.valor)}</td>
+          <td>${fmtRD(p.valor*(p.porc/100))}</td>
+          <td>${fmtRD(p.libra)}</td>
+          <td>${fmtRD(g)}</td>
+          <td>${fmtRD(pagadoMes)}</td>
+        </tr>`);
+      }));
+
+      document.getElementById('r-capital').textContent = fmtRD(capital);
+      document.getElementById('r-porcentaje').textContent = fmtRD(porcentaje);
+      document.getElementById('r-libra').textContent = fmtRD(libra);
+      document.getElementById('r-ganancias').textContent = fmtRD(ganancias);
+      document.getElementById('r-cobrado').textContent = fmtRD(cobrado);
+      document.getElementById('r-deuda').textContent = fmtRD(deuda);
+
+      document.getElementById('rep-tabla').innerHTML = `<div style='overflow:auto'>
+        <table>
+          <thead><tr><th>Cliente</th><th>Artículo</th><th>Fecha</th><th>Capital</th><th>%</th><th>Libra</th><th>Ganancia</th><th>Cobrado (mes)</th></tr></thead>
+          <tbody>${filas.join('')}</tbody>
+        </table>
+      </div>`;
+    }
+
+    // =====================
+    // Export / Import (backup manual para subir a GitHub/Drive)
+    // =====================
+    document.getElementById('btn-export').addEventListener('click',()=>{
+      const blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `LisSVariedades_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById('import-file').addEventListener('change',(e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try{
+          const data = JSON.parse(rd.result);
+          if(!data || !Array.isArray(data.clientes)) throw new Error('Formato inválido');
+          db = data; save();
+          renderDashboard(); renderClientes(); fillClientesSelect();
+          alert('✅ Datos importados');
+        }catch(err){ alert('Archivo inválido'); }
+      };
+      rd.readAsText(f);
+    });
+
+    // =====================
+    // Demo (opcional)
+    // =====================
+    document.getElementById('btn-reset-demo').addEventListener('click',()=>{
+      if(!confirm('Esto reemplazará tus datos actuales por un demo. ¿Continuar?')) return;
+      db = {
+        clientes:[
+          {id:uid('cli'), nombre:'María Pérez', telefono:'8095551234', email:'maria@mail.com', notas:'Cliente frecuente', pedidos:[
+            {id:uid('ped'), articulo:'Bolso de mano', valor:600, porc:2, libra:190, tracking:'TRK-001', estado:'En Tránsito', total:600+(600*0.02)+190, fecha:new Date().toLocaleDateString(), pagos:[{id:uid('pay'),monto:400,fecha:todayISO()}]},
+            {id:uid('ped'), articulo:'Zapatos', valor:1200, porc:3, libra:250, tracking:'TRK-002', estado:'Disponible', total:1200+(1200*0.03)+250, fecha:new Date().toLocaleDateString(), pagos:[]}
+          ]},
+          {id:uid('cli'), nombre:'Juan Gómez', telefono:'8291112233', email:'juan@mail.com', notas:'', pedidos:[]}
+        ]
+      };
+      save();
+      renderDashboard(); renderClientes(); fillClientesSelect();
+      alert('Demo cargado');
+    });
+
+    // Init
+    window.addEventListener('load',()=>{
+      renderDashboard();
+      renderClientes();
+      fillClientesSelect();
+    });
+  </script>
+</body>
+</html>
