@@ -1,351 +1,436 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AppLisS - Control de Clientes y Pedidos</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AppLisS — Clientes, Pedidos y Abonos (Google Sheets)</title>
+  <meta name="description" content="AppLisS: control de clientes, pedidos y abonos con Google Sheets (SheetDB) desde GitHub Pages.">
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f8fafc;
-      color: #0f172a;
-      margin: 0;
-      padding: 20px;
+    :root{
+      --bg:#f8fafc; --text:#0f172a; --muted:#64748b; --card:#ffffff;
+      --border:#e2e8f0; --accent:#0f172a; --ok:#22c55e; --warn:#f97316; --info:#2563eb;
     }
-    h1 { text-align: center; color: #1e293b; }
-    .container { max-width: 900px; margin: 0 auto; }
-    section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    input, select {
-      padding: 8px;
-      margin: 5px 0;
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-    }
-    button {
-      background: #0f172a;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 14px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover { background: #1e293b; }
-    .listado {
-      margin-top: 15px;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 10px;
-    }
-    .cliente-card, .pedido-card {
-      border: 1px solid #e2e8f0;
-      padding: 10px;
-      border-radius: 6px;
-      margin: 5px 0;
-      background: #f1f5f9;
-      cursor: pointer;
-    }
-    .cliente-card:hover { background: #e2e8f0; }
-    .whatsapp-btn {
-      background: #25d366;
-      color: white;
-      border: none;
-      padding: 8px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 5px;
-    }
-    .whatsapp-btn:hover { background: #1ebe5c; }
-    .pago-btn {
-      background: #2563eb;
-      color: white;
-      padding: 6px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9em;
-      margin-top: 4px;
-      display: inline-block;
-    }
-    .pago-btn:hover { background: #1e40af; }
-    .campo-pago {
-      margin-top: 5px;
-      display: none;
-    }
-    #detalleCliente { display: none; }
-    canvas {
-      max-width: 400px;
-      margin: 15px auto;
-      display: block;
-    }
-    .subtitulo {
-      font-weight: bold;
-      margin-top: 20px;
-      color: #1e293b;
-    }
-    #historialPagos {
-      margin-top: 20px;
-      background: #f9fafb;
-      border-radius: 8px;
-      padding: 10px;
-      border: 1px solid #e2e8f0;
-    }
-    #historialPagos h3 {
-      margin-top: 0;
-      color: #0f172a;
-    }
-    .pago-item {
-      font-size: 0.95em;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 5px 0;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:18px 16px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+    h1{margin:0;font-size:1.35rem}
+    .container{max-width:1100px;margin:0 auto;padding:16px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab-btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer}
+    .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    section.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0}
+    .grid{display:grid;gap:12px}
+    @media(min-width:800px){.grid-2{grid-template-columns:1fr 1fr}}
+    input,select,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    textarea{min-height:80px;resize:vertical}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn.secondary{background:var(--info)}
+    .btn.ok{background:var(--ok)}
+    .btn.warn{background:var(--warn)}
+    .list{display:grid;gap:10px;margin-top:10px}
+    .item{border:1px solid var(--border);border-radius:12px;padding:12px;background:#f1f5f9}
+    .muted{color:var(--muted);font-size:.92rem}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .kpis{display:grid;gap:12px}
+    @media(min-width:800px){.kpis{grid-template-columns:repeat(4,1fr)}}
+    .kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px}
+    .kpi h3{margin:0 0 6px 0;font-size:.95rem;color:var(--muted)}
+    .kpi .val{font-size:1.25rem;font-weight:700}
+    small.code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0b1220;color:#e5e7eb;padding:2px 6px;border-radius:6px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:.8rem}
+    .sep{height:1px;background:var(--border);margin:10px 0}
   </style>
 </head>
 <body>
-  <h1>📋 AppLisS - Liss Variedades</h1>
+  <header>
+    <h1>📋 AppLisS — Liss Variedades (Google Sheets)</h1>
+    <div class="muted">Base compartida vía <strong>SheetDB</strong> — todos ven los mismos datos</div>
+  </header>
+
   <div class="container">
 
-    <!-- === PANEL PRINCIPAL === -->
-    <section id="panelPrincipal">
-      <h2>👤 Registrar Cliente</h2>
-      <input id="nombreCliente" placeholder="Nombre completo">
-      <input id="telefonoCliente" placeholder="Teléfono (solo números)">
-      <input id="direccionCliente" placeholder="Dirección">
-      <button id="btnAgregarCliente">Agregar Cliente</button>
-      <div class="listado" id="listaClientes"></div>
-    </section>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="clientes">Clientes</button>
+      <button class="tab-btn" data-tab="pedidos">Pedidos</button>
+      <button class="tab-btn" data-tab="pagos">Pagos / Abonos</button>
+      <span class="muted" style="margin-left:auto">Endpoint: <small class="code" id="endpointView"></small></span>
+    </div>
 
-    <section id="panelPedidos">
-      <h2>📦 Registrar Pedido</h2>
-      <select id="clienteSelect"></select>
-      <input id="articulo" placeholder="Artículo">
-      <input id="valorArticulo" type="number" placeholder="Valor del artículo">
-      <input id="porcentaje" type="number" placeholder="Porcentaje (%)">
-      <input id="libra" type="number" placeholder="Costo por libra">
-      <input id="pagado" type="number" placeholder="Monto pagado">
-      <button id="btnAgregarPedido">Guardar Pedido</button>
-      <div class="listado" id="listaPedidos"></div>
-    </section>
-
-    <!-- === DETALLE DEL CLIENTE === -->
-    <section id="detalleCliente">
-      <h2 id="tituloDetalle">📄 Detalle del Cliente</h2>
-      <div id="infoCliente"></div>
-      <div id="pedidosCliente"></div>
-      <div id="resumenCliente" style="margin-top:10px;font-weight:600;"></div>
-      <canvas id="graficaCliente"></canvas>
-
-      <!-- === FORMULARIO NUEVO PEDIDO === -->
-      <div class="subtitulo">➕ Agregar nuevo pedido</div>
-      <input id="articuloCliente" placeholder="Artículo">
-      <input id="valorCliente" type="number" placeholder="Valor del artículo">
-      <input id="porcentajeCliente" type="number" placeholder="Porcentaje (%)">
-      <input id="libraCliente" type="number" placeholder="Costo por libra">
-      <input id="pagadoCliente" type="number" placeholder="Monto pagado">
-      <button id="btnAgregarPedidoCliente">Guardar Pedido</button>
-
-      <!-- === HISTORIAL DE PAGOS === -->
-      <div id="historialPagos">
-        <h3>📜 Historial de Pagos</h3>
-        <div id="listaPagos"></div>
+    <!-- DASHBOARD -->
+    <section class="card tab tab-dashboard" style="display:block">
+      <h2>📊 Resumen general</h2>
+      <div class="kpis">
+        <div class="kpi"><h3>Clientes</h3><div class="val" id="kpiClientes">0</div></div>
+        <div class="kpi"><h3>Pedidos</h3><div class="val" id="kpiPedidos">0</div></div>
+        <div class="kpi"><h3>Total vendido</h3><div class="val" id="kpiVendido">RD$ 0</div></div>
+        <div class="kpi"><h3>Total cobrado</h3><div class="val" id="kpiCobrado">RD$ 0</div></div>
       </div>
+      <div class="sep"></div>
+      <div class="muted">Tip: si algún valor no cuadra, recarga con el botón ➜ <button class="btn secondary" id="btnRecargar">Recargar datos</button></div>
+    </section>
 
-      <button id="btnVolver">⬅ Volver</button>
+    <!-- CLIENTES -->
+    <section class="card tab tab-clientes" style="display:none">
+      <h2>👤 Clientes</h2>
+      <div class="grid grid-2">
+        <div>
+          <h3>➕ Registrar cliente</h3>
+          <div class="grid">
+            <input id="cNombre" placeholder="Nombre completo">
+            <input id="cTelefono" placeholder="Teléfono">
+            <input id="cEmail" placeholder="Email (opcional)">
+            <textarea id="cNotas" placeholder="Notas"></textarea>
+            <button class="btn" id="btnAddCliente">Guardar cliente</button>
+          </div>
+          <p class="muted">Se guardará una fila <span class="pill">tipo=cliente</span> en la hoja.</p>
+        </div>
+        <div>
+          <h3>📋 Listado</h3>
+          <div id="listaClientes" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="card tab tab-pedidos" style="display:none">
+      <h2>📦 Pedidos</h2>
+      <div class="grid grid-2">
+        <div>
+          <h3>➕ Registrar pedido</h3>
+          <div class="grid">
+            <select id="pCliente"></select>
+            <input id="pArticulo" placeholder="Artículo">
+            <div class="row">
+              <input id="pValor" type="number" placeholder="Valor (RD$)" style="flex:1">
+              <input id="pPorc" type="number" placeholder="% (ganancia)" style="flex:1">
+              <input id="pLibra" type="number" placeholder="Libra (RD$)" style="flex:1">
+            </div>
+            <div class="row">
+              <input id="pTracking" placeholder="Tracking" style="flex:1">
+              <select id="pEstado" style="flex:1">
+                <option value="pendiente">Pendiente</option>
+                <option value="enviado">Enviado</option>
+                <option value="entregado">Entregado</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </div>
+            <button class="btn" id="btnAddPedido">Guardar pedido</button>
+          </div>
+          <p class="muted">Se guardará una fila <span class="pill">tipo=pedido</span> vinculada al cliente elegido.</p>
+        </div>
+        <div>
+          <h3>📋 Listado</h3>
+          <div id="listaPedidos" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGOS -->
+    <section class="card tab tab-pagos" style="display:none">
+      <h2>💵 Pagos / Abonos</h2>
+      <div class="grid grid-2">
+        <div>
+          <h3>➕ Registrar abono</h3>
+          <div class="grid">
+            <select id="payCliente"></select>
+            <select id="payPedido"></select>
+            <input id="payMonto" type="number" placeholder="Monto (RD$)">
+            <button class="btn ok" id="btnAddPago">Guardar abono</button>
+          </div>
+          <p class="muted">Se guardará una fila <span class="pill">tipo=pago</span> con columna <span class="pill">abono</span>.</p>
+        </div>
+        <div>
+          <h3>📜 Historial reciente</h3>
+          <div id="listaPagos" class="list"></div>
+        </div>
+      </div>
     </section>
 
   </div>
 
-  <!-- === Chart.js CDN === -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // ========= CONFIG =========
+    const API_URL = "https://sheetdb.io/api/v1/avsi1ki6gcrlr"; // <- tu endpoint
+    document.getElementById("endpointView").textContent = API_URL;
 
-  <!-- === FIREBASE SDK === -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, getDoc, doc, query, where, getDocs, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    // ========= UTIL =========
+    const $ = sel => document.querySelector(sel);
+    const byId = id => document.getElementById(id);
+    const uid = (p) => `${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+    const fmtMoney = n => `RD$ ${Number(n||0).toLocaleString("es-DO",{maximumFractionDigits:2})}`;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDLKCGnKyr6iM0QuShBnfm sR9VgzStXlo",
-      authDomain: "liss-variedades-cobranza.firebaseapp.com",
-      projectId: "liss-variedades-cobranza",
-      storageBucket: "liss-variedades-cobranza.appspot.com",
-      messagingSenderId: "56696969375",
-      appId: "1:56696969375:web:fcd9246988fb06ec97106a"
-    };
+    // ========= STATE =========
+    let RAW = [];              // todas las filas crudas de la hoja
+    let CLIENTES = [];         // solo filas tipo=cliente
+    let PEDIDOS = [];          // solo filas tipo=pedido
+    let PAGOS = [];            // solo filas tipo=pago
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const listaClientes = document.getElementById("listaClientes");
-    const clienteSelect = document.getElementById("clienteSelect");
-    const pedidosCliente = document.getElementById("pedidosCliente");
-    const resumenCliente = document.getElementById("resumenCliente");
-    const graficaCliente = document.getElementById("graficaCliente");
-    const listaPagos = document.getElementById("listaPagos");
-    const panelPrincipal = document.getElementById("panelPrincipal");
-    const panelPedidos = document.getElementById("panelPedidos");
-    const detalleCliente = document.getElementById("detalleCliente");
-    const infoCliente = document.getElementById("infoCliente");
-    const btnVolver = document.getElementById("btnVolver");
-    const btnAgregarPedidoCliente = document.getElementById("btnAgregarPedidoCliente");
-
-    const articuloCliente = document.getElementById("articuloCliente");
-    const valorCliente = document.getElementById("valorCliente");
-    const porcentajeCliente = document.getElementById("porcentajeCliente");
-    const libraCliente = document.getElementById("libraCliente");
-    const pagadoCliente = document.getElementById("pagadoCliente");
-
-    let clienteActual = null;
-    let grafico = null;
-
-    // === LISTAR CLIENTES ===
-    onSnapshot(collection(db, "clientes"), (snapshot) => {
-      listaClientes.innerHTML = "";
-      clienteSelect.innerHTML = "<option value=''>Selecciona un cliente</option>";
-      snapshot.forEach((docSnap) => {
-        const c = docSnap.data();
-        listaClientes.innerHTML += `
-          <div class="cliente-card" onclick="verCliente('${docSnap.id}')">
-            <strong>${c.nombre}</strong><br>
-            📞 ${c.telefono || "Sin teléfono"}<br>
-            📍 ${c.direccion || "Sin dirección"}
-          </div>
-        `;
-        clienteSelect.innerHTML += `<option value="${docSnap.id}">${c.nombre}</option>`;
+    // ========= TABS =========
+    document.querySelectorAll(".tab-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".tab").forEach(t=>t.style.display="none");
+        document.querySelector(`.tab-${tab}`).style.display="block";
       });
     });
 
-    // === FUNCIÓN PARA VER CLIENTE ===
-    window.verCliente = async (clienteId) => {
-      clienteActual = clienteId;
-      const clienteSnap = await getDoc(doc(db, "clientes", clienteId));
-      const c = clienteSnap.data();
-      infoCliente.innerHTML = `
-        <strong>${c.nombre}</strong><br>
-        📞 ${c.telefono || "Sin teléfono"}<br>
-        📍 ${c.direccion || "Sin dirección"}
-      `;
-      await actualizarPedidosCliente();
-      await cargarHistorialPagos();
-      panelPrincipal.style.display = "none";
-      panelPedidos.style.display = "none";
-      detalleCliente.style.display = "block";
-    };
+    byId("btnRecargar").onclick = () => loadAll(true);
 
-    // === ACTUALIZAR PEDIDOS ===
-    async function actualizarPedidosCliente() {
-      const q = query(collection(db, "pedidos"), where("clienteId", "==", clienteActual));
-      const pedidosSnap = await getDocs(q);
-      pedidosCliente.innerHTML = "";
-      let total = 0, pagado = 0, pendiente = 0;
+    // ========= API =========
+    async function apiList(){
+      const res = await fetch(API_URL);
+      if(!res.ok) throw new Error("No se pudo leer la hoja");
+      return res.json();
+    }
+    async function apiInsert(obj){
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ data:[obj] })
+      });
+      if(!res.ok) throw new Error("No se pudo insertar");
+      return res.json();
+    }
 
-      const clienteSnap = await getDoc(doc(db, "clientes", clienteActual));
-      const c = clienteSnap.data();
+    // ========= LOAD & BUILD =========
+    async function loadAll(showAlert){
+      const data = await apiList();
+      RAW = Array.isArray(data) ? data : [];
+      CLIENTES = RAW.filter(r => (r.tipo||"").toLowerCase()==="cliente");
+      PEDIDOS  = RAW.filter(r => (r.tipo||"").toLowerCase()==="pedido");
+      PAGOS    = RAW.filter(r => (r.tipo||"").toLowerCase()==="pago");
 
-      pedidosSnap.forEach((pDoc) => {
-        const p = pDoc.data();
-        total += p.total;
-        pagado += p.pagado;
-        pendiente += p.pendiente;
+      fillSelects();
+      renderClientes();
+      renderPedidos();
+      renderPagos();
+      renderKPIs();
+      if(showAlert) alert("✅ Datos recargados");
+    }
 
-        pedidosCliente.innerHTML += `
-          <div class="pedido-card" id="pedido-${pDoc.id}">
-            <strong>${p.articulo}</strong><br>
-            💰 Total: RD$${p.total.toFixed(2)}<br>
-            Pagado: RD$${p.pagado.toFixed(2)} | Pendiente: RD$${p.pendiente.toFixed(2)}<br>
-            <button class="pago-btn" onclick="mostrarCampoPago('${pDoc.id}')">💵 Registrar Pago</button>
-            <div class="campo-pago" id="campo-${pDoc.id}">
-              <input type="number" id="monto-${pDoc.id}" placeholder="Monto abonado">
-              <button onclick="registrarPago('${pDoc.id}','${c.nombre}')">Guardar</button>
+    function fillSelects(){
+      // Clientes en select de pedidos y pagos
+      const pCliente = byId("pCliente");
+      const payCliente = byId("payCliente");
+      pCliente.innerHTML = `<option value="">— Elegir cliente —</option>`;
+      payCliente.innerHTML = `<option value="">— Elegir cliente —</option>`;
+      CLIENTES.forEach(c=>{
+        const opt = `<option value="${c.id}">${c.nombre||"(sin nombre)"} — ${c.telefono||""}</option>`;
+        pCliente.insertAdjacentHTML("beforeend", opt);
+        payCliente.insertAdjacentHTML("beforeend", opt);
+      });
+
+      // cuando elija cliente para pagos, cargar pedidos
+      payCliente.onchange = ()=>{
+        const cid = payCliente.value;
+        fillPedidosByCliente(cid);
+      };
+      // inicial
+      fillPedidosByCliente(payCliente.value);
+    }
+
+    function fillPedidosByCliente(clienteId){
+      const payPedido = byId("payPedido");
+      payPedido.innerHTML = `<option value="">— Elegir pedido —</option>`;
+      const lista = PEDIDOS.filter(p => (p.cliente_id||"")===clienteId);
+      lista.forEach(p=>{
+        const label = `${p.articulo||"(Art.)"} — ${fmtMoney(calcTotalPedido(p))}`;
+        payPedido.insertAdjacentHTML("beforeend", `<option value="${p.id}">${label}</option>`);
+      });
+    }
+
+    // ========= RENDERS =========
+    function renderKPIs(){
+      const totalClientes = CLIENTES.length;
+      const totalPedidos = PEDIDOS.length;
+      const vendido = PEDIDOS.reduce((acc,p)=>acc+calcTotalPedido(p),0);
+      const cobrado = PAGOS.reduce((acc,pg)=>acc+Number(pg.abono||0),0);
+
+      byId("kpiClientes").textContent = totalClientes;
+      byId("kpiPedidos").textContent = totalPedidos;
+      byId("kpiVendido").textContent = fmtMoney(vendido);
+      byId("kpiCobrado").textContent = fmtMoney(cobrado);
+    }
+
+    function renderClientes(){
+      const box = byId("listaClientes");
+      box.innerHTML = "";
+      CLIENTES.forEach(c=>{
+        const pedidos = PEDIDOS.filter(p=>p.cliente_id===c.id);
+        const totalVendido = pedidos.reduce((acc,p)=>acc+calcTotalPedido(p),0);
+        const pagos = PAGOS.filter(pg=>pg.cliente_id===c.id);
+        const totalAbonos = pagos.reduce((acc,pg)=>acc+Number(pg.abono||0),0);
+        const pendiente = totalVendido - totalAbonos;
+
+        const html = `
+          <div class="item">
+            <div class="row" style="justify-content:space-between">
+              <div>
+                <strong>${c.nombre||"(Sin nombre)"}</strong>
+                <div class="muted">📞 ${c.telefono||"-"} • ${c.email||""}</div>
+              </div>
+              <div class="pill">${pedidos.length} pedido(s)</div>
+            </div>
+            <div class="row" style="gap:20px;margin-top:6px">
+              <div><strong>Total:</strong> ${fmtMoney(totalVendido)}</div>
+              <div><strong>Cobrado:</strong> ${fmtMoney(totalAbonos)}</div>
+              <div><strong>Pendiente:</strong> ${fmtMoney(pendiente)}</div>
+            </div>
+            ${c.notas?`<div class="muted" style="margin-top:6px">📝 ${c.notas}</div>`:""}
+          </div>
+        `;
+        box.insertAdjacentHTML("beforeend", html);
+      });
+    }
+
+    function renderPedidos(){
+      const box = byId("listaPedidos");
+      box.innerHTML = "";
+      // ordenar por fecha desc (si existe)
+      const list = [...PEDIDOS].sort((a,b)=> (new Date(b.fecha||0)) - (new Date(a.fecha||0)));
+      list.forEach(p=>{
+        const cli = CLIENTES.find(c=>c.id===p.cliente_id);
+        const pagos = PAGOS.filter(pg=>pg.pedido_id===p.id);
+        const cobrado = pagos.reduce((acc,pg)=>acc+Number(pg.abono||0),0);
+        const total = calcTotalPedido(p);
+        const pendiente = total - cobrado;
+
+        const html = `
+          <div class="item">
+            <div class="row" style="justify-content:space-between">
+              <div><strong>${p.articulo||"(Artículo)"}</strong> <span class="muted">• ${p.fecha||""}</span></div>
+              <div class="pill">${(p.estado||"pendiente")}</div>
+            </div>
+            <div class="muted">Cliente: ${cli? (cli.nombre||"-") : "(desconocido)"} • Tracking: ${p.tracking||"-"}</div>
+            <div class="row" style="gap:20px;margin-top:6px">
+              <div><strong>Total:</strong> ${fmtMoney(total)}</div>
+              <div><strong>Cobrado:</strong> ${fmtMoney(cobrado)}</div>
+              <div><strong>Pendiente:</strong> ${fmtMoney(pendiente)}</div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <input type="number" placeholder="Abono (RD$)" id="i_${p.id}" style="max-width:200px">
+              <button class="btn ok" onclick="registrarAbono('${p.cliente_id}','${p.id}')">Registrar abono</button>
             </div>
           </div>
         `;
-      });
-
-      resumenCliente.innerHTML = `
-        💰 Total general: RD$${total.toFixed(2)} |
-        Pagado: RD$${pagado.toFixed(2)} |
-        Pendiente: RD$${pendiente.toFixed(2)}
-      `;
-
-      if (grafico) grafico.destroy();
-      grafico = new Chart(graficaCliente, {
-        type: "doughnut",
-        data: {
-          labels: ["Pagado", "Pendiente"],
-          datasets: [{ data: [pagado, pendiente], backgroundColor: ["#22c55e", "#f97316"] }]
-        },
-        options: { plugins: { title: { display: true, text: "Estado de Pagos" } } }
+        box.insertAdjacentHTML("beforeend", html);
       });
     }
 
-    // === MOSTRAR CAMPO DE PAGO ===
-    window.mostrarCampoPago = (id) => {
-      const campo = document.getElementById(`campo-${id}`);
-      campo.style.display = campo.style.display === "block" ? "none" : "block";
-    };
-
-    // === REGISTRAR PAGO + HISTORIAL ===
-    window.registrarPago = async (pedidoId, nombreCliente) => {
-      const monto = parseFloat(document.getElementById(`monto-${pedidoId}`).value) || 0;
-      if (monto <= 0) return alert("Ingresa un monto válido.");
-
-      const pedidoRef = doc(db, "pedidos", pedidoId);
-      const pedidoSnap = await getDoc(pedidoRef);
-      const p = pedidoSnap.data();
-
-      const nuevoPagado = p.pagado + monto;
-      const nuevoPendiente = p.total - nuevoPagado;
-
-      await updateDoc(pedidoRef, { pagado: nuevoPagado, pendiente: nuevoPendiente });
-
-      // === Guardar en colección /pagos ===
-      await addDoc(collection(db, "pagos"), {
-        clienteId: clienteActual,
-        clienteNombre: nombreCliente,
-        pedidoId,
-        articulo: p.articulo,
-        monto,
-        fecha: serverTimestamp()
-      });
-
-      alert("✅ Pago registrado correctamente");
-      await actualizarPedidosCliente();
-      await cargarHistorialPagos();
-    };
-
-    // === CARGAR HISTORIAL DE PAGOS ===
-    async function cargarHistorialPagos() {
-      const q = query(collection(db, "pagos"), where("clienteId", "==", clienteActual), orderBy("fecha", "desc"));
-      const pagosSnap = await getDocs(q);
-      listaPagos.innerHTML = "";
-
-      pagosSnap.forEach((pgDoc) => {
-        const pago = pgDoc.data();
-        const fecha = pago.fecha?.toDate().toLocaleString("es-DO") || "(fecha desconocida)";
-        listaPagos.innerHTML += `
-          <div class="pago-item">
-            💵 ${pago.articulo} - RD$${pago.monto.toFixed(2)}<br>
-            📅 ${fecha}
+    function renderPagos(){
+      const box = byId("listaPagos");
+      box.innerHTML = "";
+      const list = [...PAGOS].sort((a,b)=> (new Date(b.fecha||0)) - (new Date(a.fecha||0))).slice(0,20);
+      list.forEach(pg=>{
+        const cli = CLIENTES.find(c=>c.id===pg.cliente_id);
+        const ped = PEDIDOS.find(p=>p.id===pg.pedido_id);
+        const html = `
+          <div class="item">
+            <div class="row" style="justify-content:space-between">
+              <div><strong>Abono:</strong> ${fmtMoney(pg.abono)}</div>
+              <div class="muted">${pg.fecha||""}</div>
+            </div>
+            <div class="muted">Cliente: ${cli? (cli.nombre||"-"):"-"} • Pedido: ${ped? (ped.articulo||"-"):"-"}</div>
           </div>
         `;
+        box.insertAdjacentHTML("beforeend", html);
       });
-
-      if (!pagosSnap.size) listaPagos.innerHTML = "<em>No hay pagos registrados</em>";
     }
 
-    // === VOLVER AL PANEL PRINCIPAL ===
-    btnVolver.onclick = () => {
-      detalleCliente.style.display = "none";
-      panelPrincipal.style.display = "block";
-      panelPedidos.style.display = "block";
-      clienteActual = null;
+    // ========= CALC =========
+    function calcTotalPedido(p){
+      const v = Number(p.valor||0), pr = Number(p.porc||0), lb = Number(p.libra||0);
+      // si viene total ya calculado en la hoja, úsalo; si no, calcula
+      const tSheet = Number(p.total||0);
+      const tCalc = v + (v * pr / 100) + lb;
+      return tSheet>0 ? tSheet : tCalc;
+    }
+
+    // ========= CREATE =========
+    byId("btnAddCliente").onclick = async ()=>{
+      const nombre = byId("cNombre").value.trim();
+      const telefono = byId("cTelefono").value.trim();
+      const email = byId("cEmail").value.trim();
+      const notas = byId("cNotas").value.trim();
+      if(!nombre) return alert("Escribe el nombre del cliente");
+
+      const row = {
+        id: uid("cli"),
+        tipo: "cliente",
+        nombre, telefono, email, notas,
+        fecha: new Date().toLocaleString("es-DO")
+      };
+      await apiInsert(row);
+      byId("cNombre").value = byId("cTelefono").value = byId("cEmail").value = byId("cNotas").value = "";
+      await loadAll(true);
     };
+
+    byId("btnAddPedido").onclick = async ()=>{
+      const cliente_id = byId("pCliente").value;
+      if(!cliente_id) return alert("Elige un cliente");
+      const articulo = byId("pArticulo").value.trim();
+      const valor = Number(byId("pValor").value||0);
+      const porc = Number(byId("pPorc").value||0);
+      const libra = Number(byId("pLibra").value||0);
+      const tracking = byId("pTracking").value.trim();
+      const estado = byId("pEstado").value;
+
+      const row = {
+        id: uid("ped"),
+        tipo: "pedido",
+        cliente_id, articulo, valor, porc, libra,
+        total: (valor + (valor*porc/100) + libra),
+        tracking, estado,
+        fecha: new Date().toLocaleString("es-DO")
+      };
+      await apiInsert(row);
+      byId("pArticulo").value = byId("pValor").value = byId("pPorc").value = byId("pLibra").value = byId("pTracking").value = "";
+      await loadAll(true);
+    };
+
+    byId("btnAddPago").onclick = async ()=>{
+      const cliente_id = byId("payCliente").value;
+      const pedido_id = byId("payPedido").value;
+      const abono = Number(byId("payMonto").value||0);
+      if(!cliente_id) return alert("Elige cliente");
+      if(!pedido_id) return alert("Elige pedido");
+      if(!(abono>0)) return alert("Ingresa un monto válido");
+
+      const row = {
+        id: uid("pay"),
+        tipo: "pago",
+        cliente_id, pedido_id,
+        abono,
+        fecha: new Date().toLocaleString("es-DO")
+      };
+      await apiInsert(row);
+      byId("payMonto").value = "";
+      await loadAll(true);
+    };
+
+    // desde la lista de pedidos (input por fila)
+    window.registrarAbono = async (cliente_id, pedido_id)=>{
+      const input = byId(`i_${pedido_id}`);
+      const abono = Number(input.value||0);
+      if(!(abono>0)) return alert("Ingresa un monto válido");
+      const row = {
+        id: uid("pay"),
+        tipo: "pago",
+        cliente_id, pedido_id,
+        abono,
+        fecha: new Date().toLocaleString("es-DO")
+      };
+      await apiInsert(row);
+      input.value = "";
+      await loadAll(false);
+    };
+
+    // ========= INIT =========
+    loadAll(false);
   </script>
 </body>
 </html>
