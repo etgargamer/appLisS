@@ -1,4 +1,4 @@
-const CACHE_NAME = 'appliss-cache-v3.9.0'; 
+const CACHE_NAME = 'appliss-cache-v3.9.1'; 
 
 // Archivos esenciales que la aplicación necesita para funcionar offline
 const urlsToCache = [
@@ -7,7 +7,7 @@ const urlsToCache = [
   'manifest.json',
   'assets/css/style.css',
   'assets/js/app.js',
-  'assets/img/logo-icon.png' // Asumiendo que esta imagen es el ícono y logo principal
+  'assets/img/logo-icon.png'
 ];
 
 // Instalar Service Worker (Cargar todos los archivos a la caché)

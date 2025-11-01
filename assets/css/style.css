@@ -191,6 +191,8 @@ button.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
+  /* Estilo para la barra de estado de Retiros/Depósitos */
+  border-left: 5px solid transparent; 
 }
 .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: .8rem }
 .muted { color: var(--muted) }

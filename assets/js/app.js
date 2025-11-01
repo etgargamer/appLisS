@@ -72,7 +72,7 @@ async function apiInsert(obj){
   if(!res.ok) throw new Error("No se pudo insertar");
   return res.json();
 }
-// NUEVA FUNCIÓN: API Update (para actualizar el estado)
+// FUNCIÓN API Update (para actualizar el estado)
 async function apiUpdate(pedidoId, dataObj){
   const res = await fetch(`${API_URL}/id/${pedidoId}`, {
     method:"PUT", // Usamos PUT para actualizar la fila
@@ -104,6 +104,7 @@ async function loadAll(showAlert){
   renderClientes();
   renderPedidos();
   renderPagos();
+  renderRetiros(); // NUEVA LLAMADA (v3.9.1)
   
   dataLoaded = true;
   if (dataLoaded) computeMonthly(); 
@@ -226,6 +227,52 @@ function renderPagos(){
     box.insertAdjacentHTML("beforeend", html);
   });
 }
+
+// NUEVA FUNCIÓN: Renderizar Historial de Retiros (v3.9.1)
+function renderRetiros(){
+  const box = byId("historialRetiros"); 
+  if (!box) return; // Asegurar que el contenedor existe
+  box.innerHTML="";
+  
+  // Usamos la misma lógica de filtro que computeMonthly
+  const inCurrentMonth = (iso) => {
+      if (!iso) return false;
+      const parts = iso.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+      let d;
+      if (parts) { d = new Date(parts[3], parts[2] - 1, parts[1]); } else { d = new Date(iso); }
+      if (isNaN(d.getTime())) return false;
+      const now = new Date();
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+
+  const list = RAW
+    .filter(r => (r.tipo||'').toLowerCase()==='retiro' && inCurrentMonth(r.fecha))
+    .sort((a,b)=> (new Date(b.fecha||0)) - (new Date(a.fecha||0))); // Ordenar por fecha reciente
+
+  if (list.length === 0) {
+      box.textContent = "No hay retiros registrados este mes.";
+      return;
+  }
+  
+  list.forEach(r=>{
+    const monto = Number(r.monto||0);
+    const montoPositivo = Math.abs(monto);
+    const isRetiro = (monto < 0);
+    const tipo = isRetiro ? 'Retiro' : 'Depósito';
+    const color = isRetiro ? 'var(--warn)' : 'var(--ok)'; // Naranja para Retiro, Verde para Depósito
+
+    const html = `
+      <div class="item" style="border-left: 5px solid ${color};">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <div><strong>${tipo}:</strong> ${fmtMoney(montoPositivo)}</div>
+          <div class="muted">${r.fecha||""}</div>
+        </div>
+        ${r.notas?`<div class="muted" style="margin-top:4px">📝 ${r.notas}</div>`:""}
+      </div>`;
+    box.insertAdjacentHTML("beforeend", html);
+  });
+}
+
 
 // NUEVA FUNCIÓN: Actualizar Estado del Pedido (v3.8.8)
 window.updatePedidoStatus = async (pedidoId) => {

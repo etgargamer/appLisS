@@ -1,8 +1,11 @@
 # CHANGELOG
 
-### v3.9.0
-- **Integración PWA (NUEVA):** Se agregó el `manifest.json` y el `service-worker.js` para que la aplicación sea instalable en el dispositivo y tenga capacidad de funcionamiento offline.
-- **Actualización de Estado:** Se implementó la opción **Actualizar Estado** en el listado de pedidos (vía PUT a la API).
+### v3.9.1
+- **NUEVA SECCIÓN:** Se agregó la sección **Historial de Retiros del Mes** al Dashboard, mostrando el monto (con indicador de Retiro/Depósito) y la nota de la transacción.
+- **Integración PWA:** Se actualizó la versión de caché del Service Worker a v3.9.1.
+
+### v3.8.8
+- **NUEVA FUNCIÓN CRÍTICA:** Se implementó la opción **Actualizar Estado** en el listado de pedidos, permitiendo modificar el campo `estado` (`pendiente`, `enviado`, `entregado`, etc.) de cualquier fila de pedido vía PUT a la API.
 - **Seguimiento Rápido:** Implementado enlace directo a **17TRACK en idioma español** en el modal de Vista Previa.
 - **Seguridad:** El Endpoint de la API fue **ocultado** de la interfaz de usuario.
 - **Experiencia de Usuario:** Implementada animación de carga con secuencia de mensajes y emojis (Splash Temático).
