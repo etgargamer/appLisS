@@ -1,9 +1,10 @@
 # CHANGELOG
 
-### v3.8.8
-- **NUEVA FUNCIÓN CRÍTICA:** Se implementó la opción **Actualizar Estado** en el listado de pedidos, permitiendo modificar el campo `estado` (`pendiente`, `enviado`, `entregado`, etc.) de cualquier fila de pedido vía PUT a la API.
+### v3.9.0
+- **Integración PWA (NUEVA):** Se agregó el `manifest.json` y el `service-worker.js` para que la aplicación sea instalable en el dispositivo y tenga capacidad de funcionamiento offline.
+- **Actualización de Estado:** Se implementó la opción **Actualizar Estado** en el listado de pedidos (vía PUT a la API).
 - **Seguimiento Rápido:** Implementado enlace directo a **17TRACK en idioma español** en el modal de Vista Previa.
-- **Seguridad:** El Endpoint de la API (`API_URL`) fue **ocultado** de la interfaz de usuario.
+- **Seguridad:** El Endpoint de la API fue **ocultado** de la interfaz de usuario.
 - **Experiencia de Usuario:** Implementada animación de carga con secuencia de mensajes y emojis (Splash Temático).
 - **Lógica de Cálculo:** Lógica de filtro de fecha ajustada a V3.8.3 para máxima compatibilidad con el formato de fecha de Google Sheets.
 
