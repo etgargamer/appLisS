@@ -2,7 +2,7 @@ const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const uid = (p)=>`${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
 const fmtMoney = (n)=> `RD$ ${Number(n||0).toLocaleString("es-DO",{maximumFractionDigits:2})}`;
-const API_URL = "https://sheetdb.io/api/v1/eqc6hhxxgfh00"; // <--- Tu Endpoint Final aquí
+const API_URL = "https://sheetdb.io/api/v1/eqc6hhxxgfh00"; // ENDPOINT FINAL (OCULTO)
 
 let RAW=[], CLIENTES=[], PEDIDOS=[], PAGOS=[];
 let splashMinTimeDone=false, dataLoaded=false;
@@ -367,7 +367,24 @@ function openPreview(pedidoId){
   byId("m_pagado").textContent = fmtMoney(cobrado);
   byId("m_pendiente").textContent = fmtMoney(pendiente);
   byId("m_estado").textContent = ped.estado || "-";
-  byId("m_tracking").textContent = ped.tracking || "-";
+  
+  // INICIO: LÓGICA DE ENLACE DE TRACKING (v3.8.7 - Enlace en español)
+  const trackingNumber = ped.tracking || "";
+  const trackingLinkEl = byId("m_tracking");
+  
+  if (trackingNumber) {
+    // URL ACTUALIZADO PARA ASEGURAR EL IDIOMA ESPAÑOL
+    const url = `https://t.17track.net/es?nums=${trackingNumber}`;
+    trackingLinkEl.href = url;
+    trackingLinkEl.textContent = trackingNumber;
+    trackingLinkEl.classList.add("tracking-link");
+  } else {
+    trackingLinkEl.href = "#";
+    trackingLinkEl.textContent = "-";
+    trackingLinkEl.classList.remove("tracking-link");
+  }
+  // FIN: LÓGICA DE ENLACE DE TRACKING (v3.8.7)
+
 
   const msg = buildWhatsappMessage({
     nombre: cli.nombre,
@@ -427,7 +444,6 @@ animateSplashStatus(); // INICIA ANIMACIÓN DE ESTADO TEMÁTICO
     };
     requestAnimationFrame(step);
   };
-  // El ENDPOINT se lee de la constante API_URL. La variable local ENDPOINT es ahora redundante.
   
   const inCurrentMonth = (iso) => {
     if (!iso) return false;
@@ -472,7 +488,7 @@ animateSplashStatus(); // INICIA ANIMACIÓN DE ESTADO TEMÁTICO
         const porc = parseFloat(r.porc || 0);
         const libra = parseFloat(r.libra || 0); 
 
-        if (isFinite(valor)) capitalVendido += valor; 
+        if (isFinite(valor)) capitalVendido += valor;
         
         if (isFinite(valor) && isFinite(porc) && isFinite(libra)) {
           const gananciaPorc = valor * porc / 100; 
@@ -480,13 +496,13 @@ animateSplashStatus(); // INICIA ANIMACIÓN DE ESTADO TEMÁTICO
         }
       }
       
-      // 2. CÁLCULO DE RETIROS (El valor `monto` es negativo)
+      // 2. CÁLCULO DE RETIROS
       for (const r of rowsRetiros) {
           const monto = parseFloat(r.monto || 0); 
           if (isFinite(monto)) totalRetiros += monto; 
       }
       
-      // 3. CAPITAL FINAL = Capital de ventas + Retiros (la suma funciona porque Retiros es negativo)
+      // 3. CAPITAL FINAL = Capital de ventas + Retiros (El retiro es negativo, por lo tanto, es una resta)
       const capitalFinal = capitalVendido + totalRetiros; 
       const gananciaFinal = gananciaTotalEstimada;
       

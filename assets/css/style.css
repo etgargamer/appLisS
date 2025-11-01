@@ -137,7 +137,6 @@ body {
   margin-bottom: 10px;
 }
 .header .spacer { flex: 1 }
-/* .header .endpoint { ... } <--- Endpoint eliminado de los estilos también */
 
 .kpis { display: grid; gap: 12px }
 @media (min-width: 900px) { .kpis { grid-template-columns: repeat(4, 1fr) } }
@@ -222,6 +221,13 @@ button.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,
 .modal .body { display: grid; gap: 8px }
 .modal .row { display: flex; gap: 10px; flex-wrap: wrap }
 .modal .footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px }
+
+/* Nuevo estilo para el enlace de tracking en el modal (v3.8.6) */
+.modal .body .tracking-link {
+    color: var(--accent-2); /* Color azul claro para el enlace */
+    text-decoration: underline;
+    font-weight: 600;
+}
 
 /* Toast */
 .toast {
