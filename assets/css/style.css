@@ -36,7 +36,7 @@ body {
 /* Splash */
 .splash {
   position: fixed; inset: 0; display: grid; place-items: center;
-  /* Fondo simple, puedes agregar gradientes si lo deseas */
+  /* Fondo simple que respeta el modo claro/oscuro */
   background: var(--bg); 
   z-index: 9999;
   opacity: 1; transition: opacity .6s ease;
@@ -52,12 +52,6 @@ body {
 }
 .splash img { width: 96px; height: 96px; border-radius: 16px; }
 .splash h1 { margin: 12px 0 6px; font-size: 1.35rem; }
-
-/* ELIMINAR O COMENTAR: Antiguo .loader y @keyframes spin */
-/*
-.loader { ... }
-@keyframes spin { to { transform: rotate(360deg) } }
-*/
 
 /* Estilos para el nuevo Dots Loader (v3.8.5) */
 .loader-dots {
@@ -143,7 +137,7 @@ body {
   margin-bottom: 10px;
 }
 .header .spacer { flex: 1 }
-.header .endpoint { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--card); padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px }
+/* .header .endpoint { ... } <--- Endpoint eliminado de los estilos también */
 
 .kpis { display: grid; gap: 12px }
 @media (min-width: 900px) { .kpis { grid-template-columns: repeat(4, 1fr) } }

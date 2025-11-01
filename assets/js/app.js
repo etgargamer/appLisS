@@ -2,7 +2,7 @@ const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const uid = (p)=>`${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
 const fmtMoney = (n)=> `RD$ ${Number(n||0).toLocaleString("es-DO",{maximumFractionDigits:2})}`;
-const API_URL = "https://sheetdb.io/api/v1/eqc6hhxxgfh00"; // ENDPOINT FINAL
+const API_URL = "https://sheetdb.io/api/v1/eqc6hhxxgfh00"; // <--- Tu Endpoint Final aquí
 
 let RAW=[], CLIENTES=[], PEDIDOS=[], PAGOS=[];
 let splashMinTimeDone=false, dataLoaded=false;
@@ -54,7 +54,7 @@ document.querySelectorAll("[data-nav]").forEach(btn=>{
   });
 });
 
-byId("endpointView").textContent = API_URL;
+// El Endpoint ya no se muestra en pantalla.
 byId("btnRecargar").onclick = ()=> loadAll(true);
 
 // API
@@ -240,7 +240,7 @@ Factura ${factura||"-"}
 Gracias por confiar en Liss Variedades 🛍️`;
 }
 
-// FORMATO DE FECHA PERSONALIZADO: DD/MM/AAAA HH:MM:SS
+// FORMATO DE FECHA PERSONALIZADO: DD/MM/AAAA HH:MI:SS
 function formatCustomDate(d) {
     const pad = (n) => String(n).padStart(2, '0');
     const DD = pad(d.getDate());
@@ -427,7 +427,7 @@ animateSplashStatus(); // INICIA ANIMACIÓN DE ESTADO TEMÁTICO
     };
     requestAnimationFrame(step);
   };
-  const ENDPOINT = $('#endpointView')?.textContent.trim() || 'https://sheetdb.io/api/v1/eqc6hhxxgfh00';
+  // El ENDPOINT se lee de la constante API_URL. La variable local ENDPOINT es ahora redundante.
   
   const inCurrentMonth = (iso) => {
     if (!iso) return false;
@@ -464,35 +464,30 @@ animateSplashStatus(); // INICIA ANIMACIÓN DE ESTADO TEMÁTICO
 
       let capitalVendido = 0;
       let gananciaTotalEstimada = 0;
-      let totalRetiros = 0; // Este valor será NEGATIVO
+      let totalRetiros = 0; 
 
       // 1. CÁLCULO DE CAPITAL VENDIDO (VALOR/COSTO) Y GANANCIA ESTIMADA
       for (const r of rowsPedidos) {
-        // Asegurarse de que el campo "valor" sea interpretado como costo/capital
         const valor = parseFloat(r.valor ?? 0); 
         const porc = parseFloat(r.porc || 0);
         const libra = parseFloat(r.libra || 0); 
 
-        if (isFinite(valor)) capitalVendido += valor; // Capital: Suma de Valor/Costo
+        if (isFinite(valor)) capitalVendido += valor; 
         
-        // Ganancia: Suma del Porcentaje de Ganancia y el valor de la Libra.
         if (isFinite(valor) && isFinite(porc) && isFinite(libra)) {
           const gananciaPorc = valor * porc / 100; 
           gananciaTotalEstimada += (gananciaPorc + libra);
         }
       }
       
-      // 2. CÁLCULO DE RETIROS
+      // 2. CÁLCULO DE RETIROS (El valor `monto` es negativo)
       for (const r of rowsRetiros) {
-          // Se suma porque 'monto' se guarda como NEGATIVO en la BD.
           const monto = parseFloat(r.monto || 0); 
-          if (isFinite(monto)) totalRetiros += monto; // totalRetiros es un valor negativo
+          if (isFinite(monto)) totalRetiros += monto; 
       }
       
-      // 3. CAPITAL FINAL = Capital de ventas + Retiros (El retiro es negativo, por lo tanto, es una resta)
+      // 3. CAPITAL FINAL = Capital de ventas + Retiros (la suma funciona porque Retiros es negativo)
       const capitalFinal = capitalVendido + totalRetiros; 
-      
-      // La ganancia permanece como estaba (Ganancia no se toca por retiros).
       const gananciaFinal = gananciaTotalEstimada;
       
       // 4. MOSTRAR RESULTADOS
