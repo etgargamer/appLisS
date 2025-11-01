@@ -72,6 +72,16 @@ async function apiInsert(obj){
   if(!res.ok) throw new Error("No se pudo insertar");
   return res.json();
 }
+// NUEVA FUNCIÓN: API Update (para actualizar el estado)
+async function apiUpdate(pedidoId, dataObj){
+  const res = await fetch(`${API_URL}/id/${pedidoId}`, {
+    method:"PUT", // Usamos PUT para actualizar la fila
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ data: dataObj })
+  });
+  if(!res.ok) throw new Error("No se pudo actualizar el estado");
+  return res.json();
+}
 
 // Toast
 function showToast(text="Listo ✅"){
@@ -168,6 +178,13 @@ function renderPedidos(){
     const cobrado = pagos.reduce((acc,pg)=>acc+Number(pg.abono||0),0);
     const total = calcTotalPedido(p);
     const pendiente = total - cobrado;
+    
+    // Lista de opciones de estado
+    const estados = ["pendiente", "enviado", "entregado", "cancelado"];
+    const options = estados.map(s => 
+        `<option value="${s}" ${s === (p.estado||"") ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
+    ).join('');
+
     const html = `
       <div class="item">
         <div style="display:flex;justify-content:space-between;gap:8px">
@@ -180,9 +197,12 @@ function renderPedidos(){
           <div><strong>Cobrado:</strong> ${fmtMoney(cobrado)}</div>
           <div><strong>Pendiente:</strong> ${fmtMoney(pendiente)}</div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <input type="number" placeholder="Abono (RD$)" id="i_${p.id}" style="max-width:220px">
+        
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap; align-items: center;">
+          <input type="number" placeholder="Abono (RD$)" id="i_${p.id}" style="max-width:120px">
           <button class="btn ok" onclick="registrarAbono('${p.cliente_id}','${p.id}')">Registrar abono</button>
+          <select id="s_${p.id}" style="max-width:150px">${options}</select>
+          <button class="btn secondary" onclick="updatePedidoStatus('${p.id}')">🔄 Actualizar Estado</button>
           <button class="btn secondary" onclick="openPreview('${p.id}')">👁️ Vista previa</button>
         </div>
       </div>`;
@@ -206,6 +226,24 @@ function renderPagos(){
     box.insertAdjacentHTML("beforeend", html);
   });
 }
+
+// NUEVA FUNCIÓN: Actualizar Estado del Pedido (v3.8.8)
+window.updatePedidoStatus = async (pedidoId) => {
+    const select = byId(`s_${pedidoId}`);
+    const nuevoEstado = select.value;
+    
+    if (!nuevoEstado) return alert("Selecciona un estado válido.");
+
+    try {
+        await apiUpdate(pedidoId, { 
+            estado: nuevoEstado 
+        });
+        showToast(`✅ Estado del pedido ${pedidoId} actualizado a ${nuevoEstado}`);
+        await loadAll(false); 
+    } catch (e) {
+        showToast(`❌ Error al actualizar: ${e.message}`);
+    }
+};
 
 // Helpers
 function calcTotalPedido(p){
@@ -368,7 +406,7 @@ function openPreview(pedidoId){
   byId("m_pendiente").textContent = fmtMoney(pendiente);
   byId("m_estado").textContent = ped.estado || "-";
   
-  // INICIO: LÓGICA DE ENLACE DE TRACKING (v3.8.7 - Enlace en español)
+  // LÓGICA DE ENLACE DE TRACKING (v3.8.7 - Enlace en español)
   const trackingNumber = ped.tracking || "";
   const trackingLinkEl = byId("m_tracking");
   
